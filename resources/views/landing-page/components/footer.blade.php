@@ -1,0 +1,1 @@
+<footer class="text-center py-5"><div class="container"><p class="fw-bold mb-1">PT Citra Pasada Property</p><p class="small opacity-75">Jl. Raya Husen Km 12, Cirebon - Jawa Barat | 0281 789 2345</p><p class="small opacity-50 mb-0">© 2025 Citra Pasada — Hunian Nyaman, Masa Depan Cerah</p></div></footer>
