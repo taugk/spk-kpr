@@ -57,6 +57,7 @@ class MarketingRiwayatController extends Controller
         $filters = $request->only(['status', 'start_date', 'end_date', 'search']);
 
         $statusOptions = [
+            Pengajuan::STATUS_SUBMITTED => 'Debitur Submit',
             Pengajuan::STATUS_ANTRIAN_ADMIN => 'Diteruskan ke Admin',
             Pengajuan::STATUS_REVISI_DEBITUR => 'Perlu Revisi',
             Pengajuan::STATUS_DITOLAK_MARKETING => 'Ditolak Marketing',
@@ -64,6 +65,6 @@ class MarketingRiwayatController extends Controller
             Pengajuan::STATUS_DITOLAK_SISTEM => 'KPR Ditolak Sistem',
         ];
 
-        return view('marketing.riwayat.semua', compact('pengajuan', 'filters', 'statusOptions', 'totals'));
+        return view('marketing.pages.pengajuan.semua', compact('pengajuan', 'filters', 'statusOptions', 'totals'));
     }
 }

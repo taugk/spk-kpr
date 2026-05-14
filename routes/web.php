@@ -395,7 +395,7 @@ Route::middleware(['auth', 'role:marketing'])
         Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
             Route::get('/masuk', [MarketingPengajuanController::class, 'masuk'])->name('masuk');
             Route::get('/masuk/export', [MarketingPengajuanController::class, 'export'])->name('masuk.export');
-            Route::get('/semua', [MarketingPengajuanController::class, 'semua'])->name('semua');
+            
             Route::get('/antrian-admin', [MarketingPengajuanController::class, 'menungguAdmin'])->name('antrian.admin');
             Route::get('/revisi', [MarketingPengajuanController::class, 'revisi'])->name('data.revisi');
             Route::get('/ditolak', [MarketingPengajuanController::class, 'ditolak'])->name('ditolak');

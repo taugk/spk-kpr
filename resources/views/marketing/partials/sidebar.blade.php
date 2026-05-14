@@ -150,9 +150,9 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('marketing.pengajuan.semua') }}"
+                    <a href="{{ route('marketing.riwayat.semua') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('marketing.pengajuan.semua') ? 'active' : '' }}">
+                            {{ request()->routeIs('marketing.riwayat.semua') ? 'active' : '' }}">
                         <span class="micon dw dw-file1"></span>
                         <span class="mtext">Semua Pengajuan</span>
                     </a>

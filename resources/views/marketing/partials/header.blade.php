@@ -63,7 +63,7 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                     <a class="dropdown-item" href="#"><i class="dw dw-user1"></i> Profil</a>
-                    <a class="dropdown-item" href="{{ route('marketing.pengaturan.index') }}"><i class="dw dw-settings2"></i> Pengaturan</a>
+                    {{-- <a class="dropdown-item" href="{{ route('marketing.pengaturan.index') }}"><i class="dw dw-settings2"></i> Pengaturan</a> --}}
                     <div class="dropdown-divider"></div>
                     <form action="{{ route('logout') }}" method="POST" id="logout-form">
                         @csrf

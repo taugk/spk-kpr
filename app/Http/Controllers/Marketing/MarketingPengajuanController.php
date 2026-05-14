@@ -161,10 +161,10 @@ class MarketingPengajuanController extends Controller
         $totalPlafon  = (clone $baseQuery)->sum('jumlah_pinjaman');
         $avgTenor     = round((clone $baseQuery)->avg('tenor_tahun') ?? 0, 1);
 
-        $antrian = $baseQuery->orderBy('tgl_submitted', 'asc')->paginate(15)->withQueryString();
+        $pengajuan = $baseQuery->orderBy('tgl_submitted', 'asc')->paginate(15)->withQueryString();
 
         return view('marketing.pages.pengajuan.revisi', compact(
-            'antrian',
+            'pengajuan',
             'totalAntrian',
             'totalPlafon',
             'avgTenor'
@@ -202,10 +202,10 @@ class MarketingPengajuanController extends Controller
         $totalPlafon  = (clone $baseQuery)->sum('jumlah_pinjaman');
         $avgTenor     = round((clone $baseQuery)->avg('tenor_tahun') ?? 0, 1);
 
-        $antrian = $baseQuery->orderBy('tgl_submitted', 'asc')->paginate(15)->withQueryString();
+        $pengajuan = $baseQuery->orderBy('tgl_submitted', 'asc')->paginate(15)->withQueryString();
 
         return view('marketing.pages.pengajuan.ditolak', compact(
-            'antrian',
+            'pengajuan',
             'totalAntrian',
             'totalPlafon',
             'avgTenor'

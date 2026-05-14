@@ -1,6 +1,6 @@
 @extends('marketing.layouts.app')
 
-@section('title', 'Antrian Pengajuan KPR Baru')
+@section('title', 'Data Pengajuan KPR')
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -320,7 +320,7 @@ body {
                 <div class="stat-top">
                     <div>
                         <p class="stat-label mb-1">Total Antrian</p>
-                        <div class="stat-value">{{ $antrian->total() }}</div>
+                        <div class="stat-value">{{ $pengajuan->total() }}</div>
                     </div>
                     <div class="stat-icon icon-primary">
                         <i class="dw dw-inbox"></i>
@@ -368,7 +368,7 @@ body {
             <h6 class="card-title">
                 <i class="dw dw-table" style="color:var(--primary)"></i>
                 Daftar Pengajuan KPR
-                <span class="count-badge">{{ $antrian->total() }} Pengajuan</span>
+                <span class="count-badge">{{ $pengajuan->total() }} Pengajuan</span>
             </h6>
             <a href="{{ route('marketing.pengajuan.masuk.export') }}?{{ http_build_query(request()->all()) }}"
                class="btn-export">
@@ -391,11 +391,11 @@ body {
                         </tr>
                     </thead>
                     <tbody>
-                    @forelse($antrian as $index => $item)
+                    @forelse($pengajuan as $index => $item)
                     <tr>
                         {{-- No --}}
                         <td style="text-align:center;color:var(--muted);font-weight:600">
-                            {{ $antrian->firstItem() + $index }}
+                            {{ $pengajuan->firstItem() + $index }}
                         </td>
 
                         {{-- Kode --}}
@@ -500,26 +500,26 @@ body {
             </div>
 
             {{-- Pagination --}}
-            @if($antrian->hasPages())
+            @if($pengajuan->hasPages())
             <div class="d-flex align-items-center justify-content-between px-4 py-3"
                  style="border-top:1px solid var(--border)">
                 <small style="color:var(--muted)">
-                    Menampilkan <strong>{{ $antrian->firstItem() ?? 0 }}</strong>
-                    – <strong>{{ $antrian->lastItem() ?? 0 }}</strong>
-                    dari <strong>{{ $antrian->total() }}</strong> data
+                    Menampilkan <strong>{{ $pengajuan->firstItem() ?? 0 }}</strong>
+                    – <strong>{{ $pengajuan->lastItem() ?? 0 }}</strong>
+                    dari <strong>{{ $pengajuan->total() }}</strong> data
                 </small>
-                {{ $antrian->withQueryString()->links('pagination::bootstrap-4') }}
+                {{ $pengajuan->withQueryString()->links('pagination::bootstrap-4') }}
             </div>
             @endif
         </div>
     </div>
 
     {{-- ── Info Banner ──────────────────────────────── --}}
-    @if($antrian->total() > 0)
+    @if($pengajuan->total() > 0)
     <div class="info-banner mb-4">
         <div>
             <i class="dw dw-info-circle mr-2" style="color:var(--primary)"></i>
-            Terdapat <strong>{{ $antrian->total() }} pengajuan KPR</strong> yang perlu diverifikasi.
+            Terdapat <strong>{{ $pengajuan->total() }} pengajuan KPR</strong> yang perlu diverifikasi.
             Klik tombol <strong style="color:var(--success)">"Verifikasi"</strong> untuk memulai proses verifikasi dokumen dan lapangan.
         </div>
         <span class="priority-tag">
