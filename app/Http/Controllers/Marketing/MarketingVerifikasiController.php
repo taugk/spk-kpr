@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Marketing;
 
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Log};
+use Illuminate\Support\Facades\{Auth, Log, Storage};
 
 use App\Http\Controllers\Controller;
-use App\Models\{Dokumen, Pengajuan, RiwayatStatus, VerifikasiMarketing};
+use App\Models\{DokumenPengajuan, Pengajuan, RiwayatStatus, VerifikasiMarketing};
 use App\Services\Marketing\VerifikasiDokumenKPRService;
 
 class MarketingVerifikasiController extends Controller
@@ -129,11 +129,14 @@ class MarketingVerifikasiController extends Controller
 
     // ─── API: Get dokumen by pengajuan via AJAX ─────────────────────────────
 
-    public function getDokumenByPengajuan(Pengajuan $pengajuan): JsonResponse
-    {
+   public function getDokumenByPengajuan(Pengajuan $pengajuan): JsonResponse
+{
+    try {
         $this->otorisasi($pengajuan);
 
+        // Jika service mengembalikan Collection dari Model Dokumen
         $daftarDokumen = $this->verifikasiService->getDaftarDokumen($pengajuan);
+
         $dokumenUpload = $pengajuan->dokumen->keyBy('jenis_dokumen');
         $verifikasi = $pengajuan->verifikasiMarketing ?? new VerifikasiMarketing();
 
@@ -149,11 +152,18 @@ class MarketingVerifikasiController extends Controller
         ];
 
         $data = [];
-        foreach ($daftarDokumen as $dokumen) {
-            $uploaded = $dokumenUpload[$dokumen['jenis']] ?? null;
-            $fieldName = $fieldMapping[$dokumen['jenis']] ?? null;
 
-            // Tentukan status verifikasi dari field yang ada
+        foreach ($daftarDokumen as $dokumen) {
+            // Jika $dokumen adalah object/model
+            $jenis = $dokumen->jenis_dokumen ?? $dokumen->jenis ?? null;
+
+            if (!$jenis) {
+                continue;
+            }
+
+            $uploaded = $dokumenUpload[$jenis] ?? null;
+            $fieldName = $fieldMapping[$jenis] ?? null;
+
             $verifikasiStatus = 'belum_diverifikasi';
             if ($fieldName && $verifikasi->$fieldName === true) {
                 $verifikasiStatus = 'lengkap';
@@ -162,15 +172,15 @@ class MarketingVerifikasiController extends Controller
             }
 
             $data[] = [
-                'id' => $uploaded ? $uploaded->id : null,
-                'jenis' => $dokumen['jenis'],
-                'nama_dokumen' => $dokumen['nama'],
-                'wajib' => $dokumen['wajib'],
+                'id' => $dokumen->id ?? null,
+                'jenis' => $jenis,
+                'nama_dokumen' => $dokumen->nama_dokumen ?? $dokumen->nama ?? $jenis,
+                'wajib' => $dokumen->wajib ?? true,
                 'is_uploaded' => !is_null($uploaded),
-                'file_name' => $uploaded->file_name ?? null,
-                'file_size' => $uploaded->file_size ?? null,
-                'file_type' => $uploaded->file_type ?? null,
-                'file_path' => $uploaded->file_path ?? null,
+                'file_name' => $uploaded->file_name ?? $dokumen->file_name ?? null,
+                'file_size' => $uploaded->file_size ?? $dokumen->file_size ?? null,
+                'file_type' => $uploaded->file_type ?? $dokumen->file_type ?? null,
+                'file_path' => $uploaded->file_path ?? $dokumen->file_path ?? null,
                 'verifikasi_status' => $verifikasiStatus,
                 'verifikasi_catatan' => null,
             ];
@@ -180,11 +190,20 @@ class MarketingVerifikasiController extends Controller
             'success' => true,
             'data' => $data
         ]);
+
+    } catch (\Exception $e) {
+        Log::error('Error in getDokumenByPengajuan: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     // ─── API: Download dokumen ──────────────────────────────────────────────
 
-    public function downloadDokumen(Dokumen $dokumen)
+    public function downloadDokumen(DokumenPengajuan $dokumen)
     {
         $pengajuan = $dokumen->pengajuan;
         $this->otorisasi($pengajuan);
@@ -202,7 +221,7 @@ class MarketingVerifikasiController extends Controller
 
     // ─── API: Preview dokumen ───────────────────────────────────────────────
 
-    public function previewDokumen(Dokumen $dokumen)
+    public function previewDokumen(DokumenPengajuan $dokumen)
     {
         $pengajuan = $dokumen->pengajuan;
         $this->otorisasi($pengajuan);
@@ -401,6 +420,38 @@ public function prosesVerifikasi(Request $request, Pengajuan $pengajuan): JsonRe
             'data' => $riwayat
         ]);
     }
+
+    /**
+ * Get file dari storage private (via AJAX)
+ */
+public function getFile(Request $request)
+{
+    try {
+        $path = $request->input('path');
+
+        if (!$path) {
+            return response()->json(['error' => 'Path tidak ditemukan'], 400);
+        }
+
+        // Cek apakah file exists
+        if (!Storage::disk('private')->exists($path)) {
+            return response()->json(['error' => 'File tidak ditemukan'], 404);
+        }
+
+        // Get file contents
+        $file = Storage::disk('private')->get($path);
+        $mimeType = Storage::disk('private')->mimeType($path);
+
+        // Return file response
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline');
+
+    } catch (\Exception $e) {
+        Log::error('Error getting file: ' . $e->getMessage());
+        return response()->json(['error' => 'Gagal mengambil file'], 500);
+    }
+}
 
     // ─── Private helpers ────────────────────────────────────────────────────
 

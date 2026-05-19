@@ -760,7 +760,7 @@ body {
                         <i class="dw dw-wall-clock mr-2" style="color:var(--primary)"></i>
                         Pengajuan KPR Terbaru
                     </h6>
-                    <a href="{{ route('marketing.pengajuan.semua') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('marketing.riwayat.semua') }}" class="btn btn-outline-primary">
                         Lihat Semua
                     </a>
                 </div>

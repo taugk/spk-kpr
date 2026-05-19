@@ -17,16 +17,6 @@ class User extends Authenticatable
     protected $table = 'users';
 
     /**
-     * Primary key yang tidak auto-incrementing
-     */
-    public $incrementing = true;
-
-    /**
-     * Tipe primary key
-     */
-    protected $keyType = 'int';
-
-    /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
@@ -92,6 +82,66 @@ class User extends Authenticatable
             self::STATUS_AKTIF,
             self::STATUS_NONAKTIF,
         ];
+    }
+
+    /**
+     * Relationships
+     */
+
+    /**
+     * Relasi ke Pengajuan sebagai debitur
+     */
+    public function pengajuan()
+    {
+        return $this->hasMany(Pengajuan::class, 'user_id', 'id');
+    }
+
+    /**
+     * Relasi ke Pengajuan sebagai marketing
+     */
+    public function pengajuanMarketing()
+    {
+        return $this->hasMany(Pengajuan::class, 'marketing_id', 'id');
+    }
+
+    /**
+     * Relasi ke Pengajuan sebagai admin
+     */
+    public function pengajuanAdmin()
+    {
+        return $this->hasMany(Pengajuan::class, 'admin_id', 'id');
+    }
+
+    /**
+     * Relasi ke Penilaian sebagai admin
+     */
+    public function penilaian()
+    {
+        return $this->hasMany(Penilaian::class, 'admin_id', 'id');
+    }
+
+    /**
+     * Relasi ke DebiturPribadi
+     */
+    public function debiturPribadi()
+    {
+        return $this->hasOne(DebiturPribadi::class, 'user_id', 'id');
+    }
+
+    /**
+     * Relasi ke DebiturPekerjaan
+     */
+    public function debiturPekerjaan()
+    {
+        return $this->hasOne(DebiturPekerjaan::class, 'user_id', 'id');
+    }
+
+    /**
+     * Relasi ke DebiturKeuangan
+     */
+    public function debiturKeuangan()
+    {
+        return $this->hasOne(DebiturKeuangan::class, 'user_id', 'id');
     }
 
     /**

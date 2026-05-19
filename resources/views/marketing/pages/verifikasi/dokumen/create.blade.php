@@ -17,7 +17,7 @@
 
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f5f7fc; }
 
-    .card-box { border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .card-box { border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); background: white; }
     .pd-20 { padding: 20px; }
     .border-top { border-top: 1px solid #eef2f6; }
     .border-bottom { border-bottom: 1px solid #eef2f6; }
@@ -56,8 +56,6 @@
     .spinner-wrapper { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-
-
     .form-control:focus, .custom-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(27,0,50,0.1); }
     .btn-primary { background: var(--primary); border: none; padding: 10px 24px; border-radius: 10px; font-weight: 600; }
     .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
@@ -66,6 +64,18 @@
     .bg-light { background: var(--gray-bg); }
     .gap-2 { gap: 8px; }
     .text-danger { color: var(--danger); }
+
+    /* Timeline */
+    .timeline-wrapper { position: relative; padding-left: 30px; }
+    .timeline-line { position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary) 0%, #e0e0e0 100%); }
+    .timeline-dot { position: absolute; left: -22px; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 2px solid white; box-shadow: 0 0 0 2px rgba(27,0,50,0.2); z-index: 1; }
+    .timeline-bubble { background: white; border-radius: 12px; padding: 14px 18px; margin-left: 10px; border: 1px solid #eef2f6; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+    /* Status badge */
+    .status-valid { background: #e8f5e9; color: #2e7d32; }
+    .status-invalid { background: #ffebee; color: #c62828; }
+    .status-pending { background: #fff8e1; color: #ff8f00; }
+    .status-badge-sm { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
 </style>
 @endpush
 
@@ -86,7 +96,7 @@
     <div class="card-box">
         <div class="pd-20 d-flex justify-content-between align-items-center border-bottom">
             <h5 class="mb-0 text-blue"><i class="fa fa-info-circle mr-2"></i> Informasi Pengajuan</h5>
-            <span class="badge-status {{ $pengajuan->status == 'verifikasi_marketing' ? 'badge-warning-light' : ($pengajuan->status == 'antrian_admin' ? 'badge-success-light' : 'badge-danger-light') }}">
+            <span class="badge-status {{ $pengajuan->status == 'verifikasi_marketing' ? 'badge-warning-light' : 'badge-info-light' }}">
                 {{ ucfirst(str_replace('_', ' ', $pengajuan->status ?? 'Menunggu Verifikasi')) }}
             </span>
         </div>
@@ -105,20 +115,104 @@
                     <div class="info-row"><div class="info-label">Jumlah Pinjaman</div><div class="info-value"><strong class="text-blue">Rp {{ number_format($pengajuan->jumlah_pinjaman, 0, ',', '.') }}</strong></div></div>
                 </div>
             </div>
-
-
         </div>
     </div>
 
     <!-- Daftar Dokumen -->
     <div class="card-box">
         <div class="pd-20 d-flex justify-content-between align-items-center border-bottom">
-            <h5 class="mb-0 text-blue"><i class="fa fa-folder-open mr-2"></i> Dokumen yang Diperlukan</h5>
-            <span class="text-muted small"><i class="fa fa-file"></i> <span id="totalUploadedCount">0</span> dari <span id="totalRequiredCount">0</span> terupload</span>
+            <h5 class="mb-0 text-blue"><i class="fa fa-folder-open mr-2"></i> Dokumen yang Diupload</h5>
+            <span class="text-muted small"><i class="fa fa-file"></i> {{ $pengajuan->dokumen->count() }} dokumen terupload</span>
         </div>
         <div class="pd-20">
-            <div class="row" id="dokumenList">
-                <div class="col-12 text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-muted"></i><p class="mt-2">Memuat dokumen...</p></div>
+            <div class="row">
+                @forelse($pengajuan->dokumen as $dokumen)
+                @php
+                    $icons = [
+                        'ktp'             => 'fa-id-card',
+                        'kk'              => 'fa-users',
+                        'npwp'            => 'fa-file-text',
+                        'slip_gaji'       => 'fa-money',
+                        'rekening_koran'  => 'fa-bank',
+                        'sk_kerja'        => 'fa-building',
+                        'slik'            => 'fa-chart-line',
+                        'buku_nikah'      => 'fa-heart',
+                        'ktp_pasangan'    => 'fa-id-card',
+                        'pas_foto'        => 'fa-camera',
+                    ];
+                    $icon = $icons[$dokumen->jenis_dokumen] ?? 'fa-file';
+
+                    // FIX: gunakan mime_type (bukan file_type)
+                    $isPdf   = $dokumen->mime_type === 'application/pdf';
+                    $isImage = in_array($dokumen->mime_type, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']);
+
+                    // FIX: field mapping sesuai jenis_dokumen di database
+                    $verifikasi   = $pengajuan->verifikasiMarketing;
+                    $fieldMapping = [
+                        'ktp'            => 'dok_ktp_valid',
+                        'kk'             => 'dok_kk_valid',
+                        'npwp'           => 'dok_npwp_valid',
+                        'slip_gaji'      => 'dok_slip_gaji_valid',
+                        'rekening_koran' => 'dok_rek_koran_valid',
+                        'slik'           => 'dok_slik_valid',
+                        'sk_kerja'       => 'dok_surat_kerja_valid',
+                    ];
+                    $fieldName  = $fieldMapping[$dokumen->jenis_dokumen] ?? null;
+                    $statusValid = $verifikasi && $fieldName ? ($verifikasi->$fieldName ?? null) : null;
+
+                    $statusText  = 'Belum Diverifikasi';
+                    $statusClass = 'status-pending';
+                    if ($statusValid === true) {
+                        $statusText  = 'Valid';
+                        $statusClass = 'status-valid';
+                    } elseif ($statusValid === false) {
+                        $statusText  = 'Tidak Valid';
+                        $statusClass = 'status-invalid';
+                    }
+                @endphp
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="dokumen-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="dokumen-icon {{ $isPdf ? 'pdf' : ($isImage ? 'image' : 'default') }}">
+                                <i class="fa {{ $icon }}"></i>
+                            </div>
+                            <span class="status-badge-sm {{ $statusClass }}">
+                                <i class="fa {{ $statusValid === true ? 'fa-check' : ($statusValid === false ? 'fa-times' : 'fa-clock-o') }}"></i>
+                                {{ $statusText }}
+                            </span>
+                        </div>
+                        <div class="dokumen-nama">{{ ucfirst(str_replace('_', ' ', $dokumen->jenis_dokumen)) }}</div>
+                        <div class="dokumen-ukuran">
+                            {{-- FIX: gunakan nama_file dan ukuran_file --}}
+                            {{ strlen($dokumen->nama_file) > 35 ? substr($dokumen->nama_file, 0, 35) . '...' : $dokumen->nama_file }}<br>
+                            {{ number_format($dokumen->ukuran_file / 1024, 2) }} KB
+                        </div>
+                        <div>
+                            @if($isPdf || $isImage)
+                                <button type="button"
+                                        class="btn-dokumen btn-preview"
+                                        {{-- FIX: gunakan path_file dan mime_type --}}
+                                        onclick="previewDocument('{{ $dokumen->path_file }}', '{{ $dokumen->nama_file }}', '{{ $dokumen->mime_type }}')">
+                                    <i class="fa fa-eye"></i> Preview
+                                </button>
+                            @endif
+                            <button type="button"
+                                    class="btn-dokumen btn-download"
+                                    {{-- FIX: gunakan path_file dan nama_file --}}
+                                    onclick="downloadDocument('{{ $dokumen->path_file }}', '{{ $dokumen->nama_file }}')">
+                                <i class="fa fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fa fa-folder-open fa-3x text-muted"></i>
+                        <p class="mt-2 text-muted">Belum ada dokumen yang diupload</p>
+                    </div>
+                </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -129,10 +223,45 @@
             <h5 class="mb-0 text-blue"><i class="fa fa-clipboard-list mr-2"></i> Verifikasi Dokumen</h5>
         </div>
         <div class="pd-20">
-            <form id="formVerifikasi">
+            <form id="formVerifikasi" method="POST" action="{{ route('marketing.verifikasi.proses', $pengajuan->id) }}">
                 @csrf
-                <input type="hidden" name="pengajuan_id" value="{{ $pengajuan->id }}">
-                <div id="verifikasiDokumenList"></div>
+                <div id="verifikasiDokumenList">
+                    @foreach($pengajuan->dokumen as $dokumen)
+                    @php
+                        // FIX: field mapping sesuai jenis_dokumen di database
+                        $statusMapping = [
+                            'ktp'            => 'dok_ktp_valid',
+                            'kk'             => 'dok_kk_valid',
+                            'npwp'           => 'dok_npwp_valid',
+                            'slip_gaji'      => 'dok_slip_gaji_valid',
+                            'rekening_koran' => 'dok_rek_koran_valid',
+                            'slik'           => 'dok_slik_valid',
+                            'sk_kerja'       => 'dok_surat_kerja_valid',
+                        ];
+                        $fieldName     = $statusMapping[$dokumen->jenis_dokumen] ?? null;
+                        $currentStatus = null;
+                        if ($fieldName && $pengajuan->verifikasiMarketing) {
+                            $currentStatus = $pengajuan->verifikasiMarketing->$fieldName;
+                        }
+                    @endphp
+                    <div class="verifikasi-item">
+                        <div class="verifikasi-header">
+                            <div class="verifikasi-nama">
+                                {{ ucfirst(str_replace('_', ' ', $dokumen->jenis_dokumen)) }}
+                                <span class="badge badge-info px-2 py-1 ml-2" style="font-size:10px">Wajib</span>
+                            </div>
+                            <select name="verifikasi_dokumen[{{ $dokumen->jenis_dokumen }}][status]" class="form-control form-control-sm" style="width:150px">
+                                <option value="belum_diverifikasi" {{ $currentStatus === null ? 'selected' : '' }}>Belum Diverifikasi</option>
+                                <option value="lengkap" {{ $currentStatus === true ? 'selected' : '' }}>✓ Lengkap & Valid</option>
+                                <option value="tidak_valid" {{ $currentStatus === false ? 'selected' : '' }}>✗ Tidak Valid</option>
+                            </select>
+                        </div>
+                        <textarea name="verifikasi_dokumen[{{ $dokumen->jenis_dokumen }}][catatan]"
+                                  class="form-control" rows="2"
+                                  placeholder="Catatan verifikasi (opsional)"></textarea>
+                    </div>
+                    @endforeach
+                </div>
 
                 <div class="bg-light p-4 rounded mt-4">
                     <h6 class="mb-3 text-blue"><i class="fa fa-check-circle mr-2"></i> Kesimpulan Verifikasi</h6>
@@ -141,27 +270,30 @@
                             <label>Rekomendasi <span class="text-danger">*</span></label>
                             <select name="rekomendasi" id="rekomendasi" class="custom-select" required>
                                 <option value="">Pilih Rekomendasi</option>
-                                <option value="layak">Layak</option>
-                                <option value="perlu_pertimbangan">Perlu Pertimbangan</option>
-                                <option value="tidak_layak">Tidak Layak</option>
+                                <option value="layak" {{ ($pengajuan->verifikasiMarketing->rekomendasi_marketing ?? '') == 'layak' ? 'selected' : '' }}>Layak</option>
+                                <option value="perlu_pertimbangan" {{ ($pengajuan->verifikasiMarketing->rekomendasi_marketing ?? '') == 'perlu_pertimbangan' ? 'selected' : '' }}>Perlu Pertimbangan</option>
+                                <option value="tidak_layak" {{ ($pengajuan->verifikasiMarketing->rekomendasi_marketing ?? '') == 'tidak_layak' ? 'selected' : '' }}>Tidak Layak</option>
                             </select>
                         </div>
                         <div class="col-md-6 form-group">
                             <label>Keputusan <span class="text-danger">*</span></label>
                             <select name="keputusan" id="keputusan" class="custom-select" required>
                                 <option value="">Pilih Keputusan</option>
-                                <option value="ajukan_ke_admin">Ajukan ke Admin</option>
-                                <option value="minta_revisi">Minta Revisi</option>
-                                <option value="tolak">Tolak</option>
+                                <option value="ajukan_ke_admin" {{ ($pengajuan->verifikasiMarketing->keputusan ?? '') == 'ajukan_ke_admin' ? 'selected' : '' }}>Ajukan ke Admin</option>
+                                <option value="minta_revisi" {{ ($pengajuan->verifikasiMarketing->keputusan ?? '') == 'minta_revisi' ? 'selected' : '' }}>Minta Revisi</option>
+                                <option value="tolak" {{ ($pengajuan->verifikasiMarketing->keputusan ?? '') == 'tolak' ? 'selected' : '' }}>Tolak</option>
                             </select>
                         </div>
-                        <div class="col-12 form-group" id="alasanGroup" style="display: none;">
+                        <div class="col-12 form-group" id="alasanGroup"
+                             style="display: {{ in_array($pengajuan->verifikasiMarketing->keputusan ?? '', ['minta_revisi', 'tolak']) ? 'block' : 'none' }};">
                             <label>Alasan Keputusan <span class="text-danger">*</span></label>
-                            <textarea name="alasan_keputusan" id="alasanKeputusan" class="form-control" rows="3" placeholder="Isikan alasan keputusan..."></textarea>
+                            <textarea name="alasan_keputusan" id="alasanKeputusan" class="form-control" rows="3"
+                                      placeholder="Isikan alasan keputusan...">{{ $pengajuan->verifikasiMarketing->alasan_keputusan ?? '' }}</textarea>
                         </div>
                         <div class="col-12 form-group">
                             <label>Catatan Tambahan</label>
-                            <textarea name="catatan_verifikasi" id="catatanVerifikasi" class="form-control" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+                            <textarea name="catatan_verifikasi" id="catatanVerifikasi" class="form-control" rows="2"
+                                      placeholder="Catatan tambahan (opsional)">{{ $pengajuan->verifikasiMarketing->catatan_verifikasi ?? '' }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -176,12 +308,34 @@
     </div>
 
     <!-- Riwayat Verifikasi -->
-    <div class="card-box" id="riwayatCard" style="display: none;">
+    <div class="card-box" id="riwayatCard" style="display: {{ $riwayat->count() > 0 ? 'block' : 'none' }};">
         <div class="pd-20 border-bottom">
             <h5 class="mb-0 text-blue"><i class="fa fa-history mr-2"></i> Riwayat Verifikasi</h5>
         </div>
         <div class="pd-20">
-            <div class="timeline" id="timelineList"></div>
+            <div class="timeline-wrapper">
+                <div class="timeline-line"></div>
+                @foreach($riwayat as $item)
+                <div class="position-relative mb-4">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-bubble shadow-sm">
+                        <p class="mb-2 text-dark font-weight-medium" style="font-size: 14px;">
+                            {{ $item->keterangan ?? ucfirst(str_replace('_', ' ', $item->status_baru)) }}
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge px-2 py-1" style="background-color: #0d6efd; font-size: 11px; color:white;">
+                                <i class="fa fa-calendar"></i> {{ $item->created_at->format('d/m/Y H:i') }}
+                            </span>
+                        </div>
+                        @if($item->pengubah)
+                        <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px;">
+                            <i class="fa fa-user-circle mr-1"></i> OLEH: {{ $item->pengubah->nama_lengkap ?? $item->pengubah->name ?? 'Sistem' }}
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
 </div>
@@ -192,14 +346,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="fa fa-file-alt mr-2"></i> Preview Dokumen</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body text-center" id="previewContainer" style="min-height: 400px;">
                 <div class="py-5"><i class="fa fa-spinner fa-spin fa-2x"></i><p class="mt-2">Memuat dokumen...</p></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-success" id="downloadFromModal" style="display: none;"><i class="fa fa-download"></i> Download</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-success" id="downloadFromModal" style="display: none;">
+                    <i class="fa fa-download"></i> Download
+                </button>
             </div>
         </div>
     </div>
@@ -209,17 +367,12 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-let currentDocuments = [];
+let currentBlobUrl = null;
 
-const routes = {
-    getDokumen: '{{ route("marketing.verifikasi.get-dokumen", $pengajuan->id) }}',
-    downloadDokumen: (id) => `/marketing/verifikasi/dokumen/download/${id}`,
-    previewDokumen: (id) => `/marketing/verifikasi/dokumen/preview/${id}`,
-    prosesVerifikasi: '{{ route("marketing.verifikasi.proses", $pengajuan->id) }}',
-    detailRiwayat: '{{ route("marketing.verifikasi.detail", $pengajuan->id) }}'
-};
+// Route untuk getFile
+const getFileUrl = '{{ route("marketing.verifikasi.get-file") }}';
 
-// Toggle alasan
+// Toggle alasan keputusan
 document.getElementById('keputusan')?.addEventListener('change', function() {
     const group = document.getElementById('alasanGroup');
     const input = document.getElementById('alasanKeputusan');
@@ -232,227 +385,116 @@ document.getElementById('keputusan')?.addEventListener('change', function() {
     }
 });
 
-async function loadDocuments() {
-    try {
-        const res = await fetch(routes.getDokumen);
-        const data = await res.json();
-        if (data.success) {
-            currentDocuments = data.data;
-            renderDocuments();
-            renderVerificationItems();
-            document.getElementById('totalRequiredCount').innerText = currentDocuments.length;
-        }
-    } catch (error) {
-        Swal.fire('Error', 'Gagal memuat dokumen', 'error');
-    }
-}
-
-function renderDocuments() {
-    const container = document.getElementById('dokumenList');
-    const uploaded = currentDocuments.filter(d => d.is_uploaded).length;
-    document.getElementById('totalUploadedCount').innerText = uploaded;
-
-    if (!currentDocuments.length) {
-        container.innerHTML = '<div class="col-12 text-center py-5"><i class="fa fa-folder-open fa-3x text-muted"></i><p class="mt-2">Belum ada dokumen</p></div>';
-        return;
-    }
-
-    container.innerHTML = currentDocuments.map(doc => `
-        <div class="col-md-6 col-lg-4 mb-3">
-            <div class="dokumen-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="dokumen-icon ${doc.is_uploaded ? (doc.file_type === 'application/pdf' ? 'pdf' : (doc.file_type?.includes('image/') ? 'image' : 'default')) : 'default'}">
-                        <i class="fa ${doc.is_uploaded ? (doc.file_type === 'application/pdf' ? 'fa-file-pdf' : (doc.file_type?.includes('image/') ? 'fa-file-image' : 'fa-file-alt')) : 'fa-file'}"></i>
-                    </div>
-                    <span class="badge ${doc.wajib ? 'badge-danger' : 'badge-info'} px-2 py-1" style="font-size:10px">${doc.wajib ? 'Wajib' : 'Opsional'}</span>
-                </div>
-                <div class="dokumen-nama">${escapeHtml(doc.nama_dokumen)}</div>
-                <div class="dokumen-ukuran">${doc.is_uploaded ? escapeHtml(doc.file_name) + '<br>' + formatFileSize(doc.file_size) : '<span class="text-danger">Belum diupload</span>'}</div>
-                ${doc.is_uploaded ? `
-                    <div>
-                        <button class="btn-dokumen btn-preview" onclick="previewDocument(${doc.id})"><i class="fa fa-eye"></i> Preview</button>
-                        <button class="btn-dokumen btn-download" onclick="downloadDocument(${doc.id})"><i class="fa fa-download"></i> Download</button>
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `).join('');
-}
-
-function renderVerificationItems() {
-    const container = document.getElementById('verifikasiDokumenList');
-    if (!container) return;
-    container.innerHTML = currentDocuments.map(doc => `
-        <div class="verifikasi-item">
-            <div class="verifikasi-header">
-                <div class="verifikasi-nama">${escapeHtml(doc.nama_dokumen)} ${doc.wajib ? '<span class="badge badge-danger px-2 py-1 ml-2" style="font-size:10px">Wajib</span>' : ''}</div>
-                <select name="verifikasi_dokumen[${doc.jenis}][status]" class="form-control form-control-sm" style="width:150px">
-                    <option value="belum_diverifikasi" ${doc.verifikasi_status === 'belum_diverifikasi' ? 'selected' : ''}>Belum Diverifikasi</option>
-                    <option value="lengkap" ${doc.verifikasi_status === 'lengkap' ? 'selected' : ''}>Lengkap</option>
-                    <option value="tidak_lengkap" ${doc.verifikasi_status === 'tidak_lengkap' ? 'selected' : ''}>Tidak Lengkap</option>
-                    <option value="tidak_valid" ${doc.verifikasi_status === 'tidak_valid' ? 'selected' : ''}>Tidak Valid</option>
-                </select>
-            </div>
-            <textarea name="verifikasi_dokumen[${doc.jenis}][catatan]" class="form-control" rows="2" placeholder="Catatan verifikasi">${escapeHtml(doc.verifikasi_catatan || '')}</textarea>
-        </div>
-    `).join('');
-}
-
-async function previewDocument(id) {
-    const modal = $('#previewModal');
-    const container = document.getElementById('previewContainer');
+// Preview dokumen via getFile
+async function previewDocument(filePath, fileName, mimeType) {
+    const modal      = new bootstrap.Modal(document.getElementById('previewModal'));
+    const container  = document.getElementById('previewContainer');
     const downloadBtn = document.getElementById('downloadFromModal');
-    container.innerHTML = '<div class="py-5"><i class="fa fa-spinner fa-spin fa-2x"></i><p class="mt-2">Memuat...</p></div>';
+
+    container.innerHTML  = '<div class="py-5"><i class="fa fa-spinner fa-spin fa-2x"></i><p class="mt-2">Memuat dokumen...</p></div>';
     downloadBtn.style.display = 'none';
-    modal.modal('show');
-    try {
-        const res = await fetch(routes.previewDokumen(id));
-        if (res.ok) {
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            let html = '';
-            if (blob.type.includes('image/')) html = `<img src="${url}" style="max-width:100%">`;
-            else if (blob.type === 'application/pdf') html = `<iframe src="${url}#toolbar=1" width="100%" height="500px"></iframe>`;
-            else html = `<div class="py-5"><i class="fa fa-file fa-3x"></i><p>File tidak dapat ditampilkan</p><button class="btn btn-primary" onclick="downloadDocument(${id})">Download</button></div>`;
-            container.innerHTML = html;
-            downloadBtn.style.display = 'inline-flex';
-            downloadBtn.onclick = () => downloadDocument(id);
-        } else throw new Error();
-    } catch (error) {
-        container.innerHTML = `<div class="py-5"><i class="fa fa-exclamation-triangle fa-3x text-danger"></i><p>Gagal memuat</p><button class="btn btn-primary" onclick="downloadDocument(${id})">Download</button></div>`;
-        downloadBtn.style.display = 'inline-flex';
-    }
-}
+    modal.show();
 
-async function downloadDocument(id) {
-    Swal.fire({ title: 'Mengunduh...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
-        const res = await fetch(routes.downloadDokumen(id), { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
-        if (res.ok) {
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'dokumen';
-            a.click();
-            URL.revokeObjectURL(url);
-            Swal.fire('Berhasil!', 'File diunduh', 'success');
-        } else throw new Error();
-    } catch (error) {
-        Swal.fire('Error!', 'Gagal mengunduh', 'error');
-    }
-}
-
-document.getElementById('formVerifikasi')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const rekomendasi = document.getElementById('rekomendasi').value;
-    const keputusan = document.getElementById('keputusan').value;
-    if (!rekomendasi || !keputusan) {
-        Swal.fire('Validasi Gagal', 'Pilih rekomendasi dan keputusan', 'error');
-        return;
-    }
-    if ((keputusan === 'minta_revisi' || keputusan === 'tolak') && !document.getElementById('alasanKeputusan').value.trim()) {
-        Swal.fire('Validasi Gagal', 'Alasan wajib diisi', 'error');
-        return;
-    }
-    const btn = document.getElementById('btnSimpan');
-    const original = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner-wrapper"></div> Menyimpan...';
-    try {
-        const formData = new FormData(this);
-        const res = await fetch(routes.prosesVerifikasi, {
+        const response = await fetch(getFileUrl, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ path: filePath })
         });
-        const result = await res.json();
-        if (result.success) {
-            Swal.fire({ icon: 'success', title: 'Berhasil!', text: result.message, timer: 1500, showConfirmButton: false }).then(() => {
-                window.location.href = result.redirect || '{{ route("marketing.verifikasi.dokumen") }}';
-            });
+
+        if (!response.ok) throw new Error('Gagal memuat file (HTTP ' + response.status + ')');
+
+        const blob = await response.blob();
+
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(blob);
+
+        downloadBtn.style.display = 'inline-flex';
+        downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.href     = currentBlobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        if (mimeType && mimeType.startsWith('image/')) {
+            container.innerHTML = `<img src="${currentBlobUrl}" style="max-width:100%;max-height:70vh;object-fit:contain;">`;
+        } else if (mimeType === 'application/pdf') {
+            container.innerHTML = `<iframe src="${currentBlobUrl}#toolbar=1" width="100%" height="500px" style="border:none;"></iframe>`;
         } else {
-            Swal.fire('Gagal!', result.message, 'error');
+            container.innerHTML = `
+                <div class="py-5">
+                    <i class="fa fa-file fa-3x text-muted"></i>
+                    <p>Preview tidak tersedia untuk tipe file ini</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('downloadFromModal').click()">Download</button>
+                </div>`;
         }
+
     } catch (error) {
-        Swal.fire('Error!', 'Terjadi kesalahan', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = original;
+        console.error('Preview error:', error);
+        container.innerHTML = `
+            <div class="py-5">
+                <i class="fa fa-exclamation-triangle fa-3x text-danger"></i>
+                <p>Gagal memuat dokumen</p>
+                <p class="text-muted small">${error.message}</p>
+            </div>`;
+        downloadBtn.style.display = 'none';
+    }
+}
+
+// Download dokumen via getFile
+async function downloadDocument(filePath, fileName) {
+    Swal.fire({ title: 'Mengunduh...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        const response = await fetch(getFileUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ path: filePath })
+        });
+
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+
+        const blob = await response.blob();
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href     = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'File berhasil diunduh.', timer: 1500, showConfirmButton: false });
+
+    } catch (error) {
+        console.error('Download error:', error);
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Gagal mengunduh file: ' + error.message });
+    }
+}
+
+// Bersihkan blob URL saat modal ditutup
+document.getElementById('previewModal').addEventListener('hidden.bs.modal', function () {
+    if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = null;
     }
 });
 
-function formatFileSize(bytes) {
-    if (!bytes) return '0 KB';
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-async function loadRiwayat() {
-    try {
-        const res = await fetch(routes.detailRiwayat);
-        const data = await res.json();
-
-        if (data.success && data.data?.length) {
-            const container = document.getElementById('timelineList');
-            // Tambahkan wrapper dan garis vertikal
-            container.innerHTML = `
-                <div class="timeline-wrapper">
-                    <div class="timeline-line"></div>
-                    <div id="timelineItems"></div>
-                </div>
-            `;
-
-            const itemsContainer = document.getElementById('timelineItems');
-            itemsContainer.innerHTML = data.data.map(item => `
-                <div class="position-relative mb-4">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-bubble shadow-sm">
-                        <!-- Teks Keterangan -->
-                        <p class="mb-2 text-dark font-weight-medium" style="font-size: 14px;">
-                            ${escapeHtml(item.keterangan || item.status_label)}
-                        </p>
-
-                        <!-- Badge Waktu (Biru seperti image_a37138.png) -->
-                        <div class="mb-2">
-                            <span class="badge badge-primary px-2 py-1" style="background-color: #0d6efd; font-size: 11px;">
-                                ${new Date(item.created_at).toLocaleDateString('id-ID')},
-                                ${new Date(item.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}
-                            </span>
-                        </div>
-
-                        <!-- Info User -->
-                        ${item.pengubah ? `
-                            <div class="text-muted text-uppercase font-weight-bold" style="font-size: 10px; letter-spacing: 0.5px;">
-                                <i class="fa fa-user-circle mr-1"></i> OLEH: ${escapeHtml(item.pengubah)}
-                            </div>` : ''}
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('riwayatCard').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Gagal memuat riwayat:', error);
-    }
-}
-
-// Set nilai awal
-document.getElementById('rekomendasi').value = '{{ $verifikasi->rekomendasi_marketing ?? "" }}';
-document.getElementById('keputusan').value = '{{ $verifikasi->keputusan ?? "" }}';
-document.getElementById('alasanKeputusan').value = '{{ $verifikasi->alasan_keputusan ?? "" }}';
-document.getElementById('catatanVerifikasi').value = '{{ $verifikasi->catatan_verifikasi ?? "" }}';
-if (['minta_revisi', 'tolak'].includes(document.getElementById('keputusan').value)) {
-    document.getElementById('alasanGroup').style.display = 'block';
-}
-
-loadDocuments();
-loadRiwayat();
+// Submit form
+document.getElementById('formVerifikasi')?.addEventListener('submit', function() {
+    const btn = document.getElementById('btnSimpan');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner-wrapper"></div> Menyimpan...';
+});
 </script>
 @endpush

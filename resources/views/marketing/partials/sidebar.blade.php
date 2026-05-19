@@ -172,6 +172,19 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="" class="dropdown-toggle no-arrow">
+                        <span class="micon dw dw-file1"></span>
+                        <span class="mtext">Laporan Verifikasi</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="" class="dropdown-toggle no-arrow">
+                        <span class="micon dw dw-folder-2"></span>
+                        <span class="mtext">Laporan Pengajuan Masuk</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

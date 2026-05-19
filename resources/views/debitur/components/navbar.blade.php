@@ -16,9 +16,7 @@
                     <li><a class="dropdown-item" href="{{ route('debitur.profil') }}">
                         <i class="bi bi-person"></i> Profil Saya
                     </a></li>
-                    <li><a class="dropdown-item" href="{{ route('debitur.dokumentasi') }}">
-                        <i class="bi bi-folder2"></i> Dokumentasi
-                    </a></li>
+                    
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('debitur.logout') }}">

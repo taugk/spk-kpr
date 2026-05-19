@@ -448,27 +448,27 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Nama Lengkap</div>
-                    <div class="info-value">{{ $pengajuan->nama_lengkap ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->user->nama_lengkap ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">NIK</div>
-                    <div class="info-value">{{ $pengajuan->nik ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->nik ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Tempat, Tanggal Lahir</div>
-                    <div class="info-value">{{ $pengajuan->tempat_lahir ?? '-' }}, {{ isset($pengajuan->tanggal_lahir) ? date('d/m/Y', strtotime($pengajuan->tanggal_lahir)) : '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->tempat_lahir ?? '-' }}, {{ isset($pengajuan->debiturPribadi->tanggal_lahir) ? date('d/m/Y', strtotime($pengajuan->debiturPribadi->tanggal_lahir)) : '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jenis Kelamin</div>
-                    <div class="info-value">{{ $pengajuan->jenis_kelamin ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->jenis_kelamin ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Agama</div>
-                    <div class="info-value">{{ $pengajuan->agama ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->agama ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Status Pernikahan</div>
-                    <div class="info-value">{{ $pengajuan->status_pernikahan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->status_pernikahan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jumlah Tanggungan</div>
@@ -476,7 +476,7 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Pendidikan</div>
-                    <div class="info-value">{{ $pengajuan->pendidikan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->pendidikan_terakhir ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Kewarganegaraan</div>
@@ -484,39 +484,39 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nama Ibu Kandung</div>
-                    <div class="info-value">{{ $pengajuan->nama_ibu ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->nama_ibu_kandung ?? '-' }}</div>
                 </div>
                 <div class="info-item ff">
                     <div class="info-label">Alamat KTP</div>
-                    <div class="info-value">{{ $pengajuan->alamat_ktp ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->alamat_ktp ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Kota/Kabupaten</div>
-                    <div class="info-value">{{ $pengajuan->kota ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->kota ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Provinsi</div>
-                    <div class="info-value">{{ $pengajuan->provinsi ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->provinsi ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Kode Pos</div>
-                    <div class="info-value">{{ $pengajuan->kode_pos ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->kode_pos ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Status Tempat Tinggal</div>
-                    <div class="info-value">{{ $pengajuan->status_tempat_tinggal ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->status_tempat_tinggal ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">No. Telepon/HP</div>
-                    <div class="info-value">{{ $pengajuan->no_hp ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->no_hp ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Email</div>
-                    <div class="info-value">{{ $pengajuan->email ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->user->email ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">No. KK</div>
-                    <div class="info-value">{{ $pengajuan->no_kk ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPribadi->no_kk ?? '-' }}</div>
                 </div>
                 @if($pengajuan->nama_pasangan)
                 <div class="info-item">
@@ -547,39 +547,39 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Status Pekerjaan</div>
-                    <div class="info-value">{{ $pengajuan->status_pekerjaan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->status_pekerjaan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nama Perusahaan</div>
-                    <div class="info-value">{{ $pengajuan->nama_perusahaan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->nama_perusahaan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Bidang Usaha</div>
-                    <div class="info-value">{{ $pengajuan->bidang_usaha ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->bidang_usaha ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jabatan</div>
-                    <div class="info-value">{{ $pengajuan->jabatan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->jabatan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Lama Bekerja</div>
-                    <div class="info-value">{{ $pengajuan->lama_bekerja ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->lama_bekerja_tahun ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Status Kepegawaian</div>
-                    <div class="info-value">{{ $pengajuan->status_kepegawaian ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->status_kepegawaian ?? '-' }}</div>
                 </div>
                 <div class="info-item ff">
                     <div class="info-label">Alamat Perusahaan</div>
-                    <div class="info-value">{{ $pengajuan->alamat_perusahaan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->alamat_perusahaan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Telp Perusahaan</div>
-                    <div class="info-value">{{ $pengajuan->telp_perusahaan ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->telp_perusahaan ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">NPWP</div>
-                    <div class="info-value">{{ $pengajuan->npwp ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturPekerjaan->npwp ?? '-' }}</div>
                 </div>
             </div>
 
@@ -588,20 +588,22 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Penghasilan Pokok/Bulan</div>
-                        <div class="info-value">{{ number_format($pengajuan->penghasilan_pokok ?? 0, 0, ',', '.') }}</div>
+                        <div class="info-value">{{ number_format($pengajuan->debiturPekerjaan->penghasilan_pokok ?? 0, 0, ',', '.') }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Tunjangan Tetap/Bulan</div>
-                        <div class="info-value">{{ number_format($pengajuan->tunjangan ?? 0, 0, ',', '.') }}</div>
+                        <div class="info-value">{{ number_format($pengajuan->debiturPekerjaan->tunjangan_tetap ?? 0, 0, ',', '.') }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Penghasilan Lain/Bulan</div>
-                        <div class="info-value">{{ number_format($pengajuan->penghasilan_lain ?? 0, 0, ',', '.') }}</div>
+                        <div class="info-value">{{ number_format($pengajuan->debiturPekerjaan->penghasilan_lain ?? 0, 0, ',', '.') }}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Total Penghasilan/Bulan</div>
-                        <div class="info-value large">{{ number_format(($pengajuan->penghasilan_pokok ?? 0) + ($pengajuan->tunjangan ?? 0) + ($pengajuan->penghasilan_lain ?? 0), 0, ',', '.') }}</div>
+                    <div class="info-label">Total Penghasilan/Bulan</div>
+                    <div class="info-value large">
+                        Rp {{ number_format($pengajuan->debiturPekerjaan->total_penghasilan ?? 0, 0, ',', '.') }}
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -611,7 +613,7 @@
         <!-- Keuangan & Bank -->
         <div class="section-header">
             <div class="section-title">
-                <div class="section-icon info"><i class="bi bi-building-bank"></i></div>
+                <div class="section-icon info"><i class="bi bi-bank"></i></div>
                 <div class="section-text">
                     <h6>Data Keuangan & Bank</h6>
                     <small>Informasi rekening dan kewajiban</small>
@@ -623,19 +625,19 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Nama Bank</div>
-                    <div class="info-value">{{ $pengajuan->nama_bank ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturKeuangan->nama_bank ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nomor Rekening</div>
-                    <div class="info-value">{{ $pengajuan->nomor_rekening ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturKeuangan->nomor_rekening ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Pemilik Rekening</div>
-                    <div class="info-value">{{ $pengajuan->pemilik_rekening ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturKeuangan->nama_pemilik_rekening ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jenis Rekening</div>
-                    <div class="info-value">{{ $pengajuan->jenis_rekening ?? 'Tabungan' }}</div>
+                    <div class="info-value">{{ $pengajuan->debiturKeuangan->jenis_rekening ?? 'Tabungan' }}</div>
                 </div>
             </div>
 
@@ -644,19 +646,19 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Total Cicilan/Bulan</div>
-                        <div class="info-value">{{ number_format($pengajuan->total_cicilan ?? 0, 0, ',', '.') }}</div>
+                        <div class="info-value">{{ number_format($pengajuan->debiturKeuangan->total_cicilan ?? 0, 0, ',', '.') }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Jumlah Kredit Aktif</div>
-                        <div class="info-value">{{ $pengajuan->jumlah_kredit_aktif ?? '0' }}</div>
+                        <div class="info-value">{{ $pengajuan->debiturKeuangan->jumlah_kredit_aktif ?? '0' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Limit Kartu Kredit</div>
-                        <div class="info-value">{{ number_format($pengajuan->limit_kartu_kredit ?? 0, 0, ',', '.') }}</div>
+                        <div class="info-value">{{ number_format($pengajuan->debiturKeuangan->limit_kartu_kredit ?? 0, 0, ',', '.') }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Memiliki KPR Aktif</div>
-                        <div class="info-value">{{ $pengajuan->memiliki_kpr_aktif ?? 'Tidak' }}</div>
+                        <div class="info-value">{{ isset($pengajuan->debiturKeuangan) && $pengajuan->debiturKeuangan->memiliki_kpr_aktif == 1 ? 'Ya' : 'Tidak' }}</div>
                     </div>
                 </div>
             </div>
@@ -666,11 +668,11 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Status Kredit Saat Ini</div>
-                        <div class="info-value">{{ $pengajuan->status_kredit ?? '-' }}</div>
+                        <div class="info-value">{{ $pengajuan->debiturKeuangan->status_kredit ?? '-' }}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Pernah Gagal Bayar</div>
-                        <div class="info-value">{{ $pengajuan->pernah_gagal_bayar ?? '-' }}</div>
+                        <div class="info-value">{{ isset($pengajuan->debiturKeuangan->pernah_gagal_bayar) && $pengajuan->debiturKeuangan->pernah_gagal_bayar == 1 ? 'Ya' : 'Tidak' }}</div>
                     </div>
                 </div>
             </div>
@@ -692,23 +694,23 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Nama Proyek</div>
-                    <div class="info-value">{{ $pengajuan->properti->nama_proyek ?? $pengajuan->nama_proyek ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->unit->tipeUnit->proyek->nama_proyek ?? $pengajuan->nama_proyek ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Tipe Unit</div>
-                    <div class="info-value">{{ $pengajuan->tipe_unit ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->unit->tipeUnit->nama_tipe ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nomor Unit</div>
-                    <div class="info-value">{{ $pengajuan->nomor_unit ?? '-' }}</div>
+                    <div class="info-value">{{ $pengajuan->unit->kode_unit ?? '-' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Luas Tanah</div>
-                    <div class="info-value">{{ $pengajuan->luas_tanah ?? '-' }} m²</div>
+                    <div class="info-value">{{ $pengajuan->unit->tipeUnit->luas_tanah ?? '-' }} m²</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Luas Bangunan</div>
-                    <div class="info-value">{{ $pengajuan->luas_bangunan ?? '-' }} m²</div>
+                    <div class="info-value">{{ $pengajuan->unit->tipeUnit->luas_bangunan ?? '-' }} m²</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Harga Properti</div>
@@ -716,19 +718,19 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Uang Muka (DP)</div>
-                    <div class="info-value">{{ number_format($pengajuan->dp ?? 0, 0, ',', '.') }}</div>
+                    <div class="info-value">{{ number_format($pengajuan->uang_muka ?? 0, 0, ',', '.') }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Persentase DP</div>
-                    <div class="info-value">{{ $pengajuan->harga_properti > 0 ? round(($pengajuan->dp ?? 0) / ($pengajuan->harga_properti ?? 1) * 100, 1) : 0 }}%</div>
+                    <div class="info-value">{{ $pengajuan->persen_dp ?? 0 }}%</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jumlah Pinjaman</div>
-                    <div class="info-value">{{ number_format(($pengajuan->harga_properti ?? 0) - ($pengajuan->dp ?? 0), 0, ',', '.') }}</div>
+                    <div class="info-value">{{ number_format($pengajuan->jumlah_pinjaman ?? 0, 0, ',', '.') }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Tenor KPR</div>
-                    <div class="info-value">{{ $pengajuan->tenor ?? '-' }} tahun</div>
+                    <div class="info-value">{{ $pengajuan->tenor_tahun ?? '-' }} tahun</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Estimasi Angsuran/Bulan</div>
@@ -744,46 +746,118 @@
         <div class="divider"></div>
 
         <!-- Dokumen -->
-        <div class="section-header">
-            <div class="section-title">
-                <div class="section-icon purple"><i class="bi bi-file-text"></i></div>
-                <div class="section-text">
-                    <h6>Dokumen Pendukung</h6>
-                    <small>File yang telah diupload</small>
+<div class="section-header">
+    <div class="section-title">
+        <div class="section-icon purple"><i class="bi bi-file-text"></i></div>
+        <div class="section-text">
+            <h6>Dokumen Pendukung</h6>
+            <small>File yang telah diupload</small>
+        </div>
+    </div>
+</div>
+<div class="detail-body">
+    <div class="document-list">
+        @php
+            // Mapping jenis dokumen ke label dan icon
+            $documentConfig = [
+                'ktp' => ['label' => 'KTP', 'icon' => 'bi-file-earmark-person'],
+                'kk' => ['label' => 'Kartu Keluarga', 'icon' => 'bi-file-earmark-text'],
+                'npwp' => ['label' => 'NPWP', 'icon' => 'bi-file-earmark-text'],
+                'slip_gaji' => ['label' => 'Slip Gaji', 'icon' => 'bi-file-earmark-spreadsheet'],
+                'rekening_koran' => ['label' => 'Rekening Koran', 'icon' => 'bi-file-earmark-text'],
+                'sk_kerja' => ['label' => 'Surat Keterangan Kerja', 'icon' => 'bi-file-earmark-text'],
+                'slik' => ['label' => 'Hasil SLIK OJK', 'icon' => 'bi-file-earmark-check'],
+                'buku_nikah' => ['label' => 'Buku Nikah', 'icon' => 'bi-file-earmark-heart'],
+                'ktp_pasangan' => ['label' => 'KTP Pasangan', 'icon' => 'bi-file-earmark-person'],
+                'foto_diri' => ['label' => 'Foto Diri', 'icon' => 'bi-image'],
+                'sk_pengangkatan' => ['label' => 'SK Pengangkatan', 'icon' => 'bi-file-earmark-text'],
+                'spt' => ['label' => 'SPT PPH21', 'icon' => 'bi-file-earmark-text'],
+                'tagihan_kartu_kredit' => ['label' => 'Tagihan Kartu Kredit', 'icon' => 'bi-credit-card'],
+                'bukti_cicilan' => ['label' => 'Bukti Cicilan Aktif', 'icon' => 'bi-receipt'],
+                'izin_usaha' => ['label' => 'SIUP/NIB', 'icon' => 'bi-building'],
+                'laporan_keuangan' => ['label' => 'Laporan Keuangan Usaha', 'icon' => 'bi-graph-up'],
+                'rekening_usaha' => ['label' => 'Rekening Koran Usaha', 'icon' => 'bi-bank'],
+                'sip' => ['label' => 'Surat Izin Praktik', 'icon' => 'bi-file-earmark-medical'],
+            ];
+        @endphp
+        
+        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $dokumenList)
+            @php
+                $config = $documentConfig[$jenis] ?? ['label' => ucfirst(str_replace('_', ' ', $jenis)), 'icon' => 'bi-file-earmark'];
+                $firstDoc = $dokumenList->first();
+            @endphp
+            <div class="document-item">
+                <div class="document-info">
+                    <div class="document-icon purple">
+                        <i class="bi {{ $config['icon'] }}"></i>
+                    </div>
+                    <div>
+                        <div class="document-name">{{ $config['label'] }}</div>
+                        <div class="document-size">
+                            {{ $dokumenList->count() }} file • 
+                            {{ number_format($dokumenList->sum('ukuran_file') / 1024, 2) }} KB
+                        </div>
+                        @if($dokumenList->count() > 1)
+                            <small class="text-muted">{{ $dokumenList->count() }} file terupload</small>
+                        @endif
+                    </div>
+                </div>
+                <div class="document-actions">
+                    @foreach($dokumenList as $dokumen)
+                        <a href="{{ route('debitur.dokumen.download', $dokumen->id) }}" 
+                           class="btn-download" 
+                           target="_blank"
+                           title="Download {{ $dokumen->nama_file }}">
+                            <i class="bi bi-download"></i>
+                            @if($loop->first && $dokumenList->count() == 1)
+                                Unduh
+                            @elseif($loop->first)
+                                Unduh ({{ $dokumenList->count() }} file)
+                            @endif
+                        </a>
+                        @break($loop->first)
+                    @endforeach
+                    
+                    @if($dokumenList->count() > 1)
+                        <button type="button" class="btn-list" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $jenis }}">
+                            <i class="bi bi-list-ul"></i> Lihat semua
+                        </button>
+                    @endif
                 </div>
             </div>
-        </div>
-        <div class="detail-body">
-            <div class="document-list">
-                @php
-                    $documents = [
-                        ['ktp', 'KTP', 'file_ktp'],
-                        ['kk', 'Kartu Keluarga', 'file_kk'],
-                        ['npwp', 'NPWP', 'file_npwp'],
-                        ['slip_gaji', 'Slip Gaji', 'file_slip_gaji'],
-                        ['rekening_koran', 'Rekening Koran', 'file_rekening_koran'],
-                        ['sk_kerja', 'Surat Keterangan Kerja', 'file_sk_kerja'],
-                        ['slik', 'Hasil SLIK OJK', 'file_slik'],
-                    ];
-                @endphp
-                @foreach($documents as $doc)
-                    @if(!empty($pengajuan->{$doc[0]}))
-                    <div class="document-item">
-                        <div class="document-info">
-                            <div class="document-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                            <div>
-                                <div class="document-name">{{ $doc[1] }}</div>
-                                <div class="document-size">{{ $pengajuan->{$doc[0] . '_size'} ?? '1.2 MB' }}</div>
-                            </div>
-                        </div>
-                        <a href="{{ asset('storage/dokumen/' . $pengajuan->{$doc[0]}) }}" class="btn-download" target="_blank">
-                            <i class="bi bi-download"></i> Unduh
-                        </a>
-                    </div>
-                    @endif
-                @endforeach
+            
+            <!-- List all files for documents with multiple files -->
+            @if($dokumenList->count() > 1)
+            <div class="collapse mt-2 mb-3" id="collapse-{{ $jenis }}">
+                <div class="card card-body bg-light">
+                    <small class="text-muted mb-2">Semua file {{ $config['label'] }}:</small>
+                    <ul class="list-unstyled mb-0">
+                        @foreach($dokumenList as $dokumen)
+                        <li class="mb-2">
+                            <a href="{{ route('debitur.dokumen.download', $dokumen->id) }}" 
+                               target="_blank"
+                               class="text-decoration-none">
+                                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                {{ $dokumen->nama_file }}
+                            </a>
+                            <span class="text-muted ms-2 small">
+                                ({{ number_format($dokumen->ukuran_file / 1024, 2) }} KB)
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
-        </div>
+            @endif
+            
+        @empty
+            <div class="alert alert-info text-center py-4">
+                <i class="bi bi-info-circle fs-1"></i>
+                <p class="mb-0 mt-2">Belum ada dokumen yang diupload.</p>
+            </div>
+        @endforelse
+    </div>
+</div>
 
         <div class="divider"></div>
 

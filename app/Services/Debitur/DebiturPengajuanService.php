@@ -4,6 +4,7 @@ namespace App\Services\Debitur;
 
 use Illuminate\Support\Facades\{DB, Log, Storage};
 use Illuminate\Support\Collection;
+use Illuminate\Http\UploadedFile;
 
 use App\Helpers\DebiturPengajuanHelper;
 use App\Models\{DebiturKeuangan, DebiturPekerjaan, DebiturPribadi, DokumenPengajuan, Pengajuan, Unit, User};
@@ -220,22 +221,18 @@ class DebiturPengajuanService
         ]);
 
         DB::transaction(function () use ($pengajuan) {
-            $deletedDocsCount = 0;
+            $basePath = "dokumen/pengajuan/{$pengajuan->id}";
             
-            foreach ($pengajuan->dokumen as $dok) {
-                Log::info('[DebiturPengajuanService] Deleting file from storage', [
-                    'dokumen_id' => $dok->id,
-                    'path' => $dok->path_file
-                ]);
-                
-                Storage::disk('private')->delete($dok->path_file);
-                $deletedDocsCount++;
+            // Hapus seluruh folder dokumen
+            if (Storage::disk('private')->exists($basePath)) {
+                Storage::disk('private')->deleteDirectory($basePath);
+                Log::info('[DebiturPengajuanService] Deleted document directory', ['path' => $basePath]);
             }
             
+            // Hapus record dari database
             $pengajuan->dokumen()->delete();
-            Log::info('[DebiturPengajuanService] Deleted documents', ['count' => $deletedDocsCount]);
-            
             $pengajuan->delete();
+            
             Log::info('[DebiturPengajuanService] Pengajuan deleted successfully');
         });
     }
@@ -369,33 +366,173 @@ class DebiturPengajuanService
     }
 
     // -----------------------------------------------------------------------
-    // Private: upload dokumen
+    // Private: upload dokumen dengan struktur folder dan penamaan terorganisir
     // -----------------------------------------------------------------------
 
     /**
-     * Map nama input form → jenis_dokumen enum di tabel dokumen_pengajuan.
+     * Konfigurasi dokumen lengkap dengan folder dan label
      */
-    private const DOKUMEN_MAP = [
-        'ktp'                    => 'ktp',
-        'kk'                     => 'kk',
-        'dokumen_npwp'           => 'npwp',
-        'buku_nikah'             => 'buku_nikah',
-        'ktp_pasangan'           => 'ktp_pasangan',
-        'foto_diri'              => 'pas_foto',
-        'slip_gaji'              => 'slip_gaji',
-        'sk_kerja'               => 'surat_keterangan_kerja',
-        'sk_pengangkatan'        => 'sk_pengangkatan',
-        'spt'                    => 'spt_pph21',
-        'rekening_koran'         => 'rekening_koran',
-        'slik'                   => 'slik_ojk',
-        'tagihan_kartu_kredit'   => 'tagihan_kartu_kredit',
-        'bukti_cicilan'          => 'bukti_cicilan_aktif',
-        'izin_usaha'             => 'siup_nib',
-        'laporan_keuangan'       => 'laporan_keuangan_usaha',
-        'rekening_usaha'         => 'rekening_koran_usaha',
-        'sip'                    => 'surat_izin_praktik',
+    private const DOKUMEN_CONFIG = [
+        'ktp' => [
+            'jenis' => 'ktp',
+            'folder' => 'KTP',
+            'label' => 'KTP'
+        ],
+        'kk' => [
+            'jenis' => 'kk',
+            'folder' => 'KK',
+            'label' => 'KK'
+        ],
+        'dokumen_npwp' => [
+            'jenis' => 'npwp',
+            'folder' => 'NPWP',
+            'label' => 'NPWP'
+        ],
+        'buku_nikah' => [
+            'jenis' => 'buku_nikah',
+            'folder' => 'BUKU_NIKAH',
+            'label' => 'BUKU_NIKAH'
+        ],
+        'ktp_pasangan' => [
+            'jenis' => 'ktp_pasangan',
+            'folder' => 'KTP_PASANGAN',
+            'label' => 'KTP_PASANGAN'
+        ],
+        'foto_diri' => [
+            'jenis' => 'pas_foto',
+            'folder' => 'FOTO_DIRI',
+            'label' => 'FOTO'
+        ],
+        'slip_gaji' => [
+            'jenis' => 'slip_gaji',
+            'folder' => 'SLIP_GAJI',
+            'label' => 'SLIP_GAJI'
+        ],
+        'sk_kerja' => [
+            'jenis' => 'surat_keterangan_kerja',
+            'folder' => 'SK_KERJA',
+            'label' => 'SK_KERJA'
+        ],
+        'sk_pengangkatan' => [
+            'jenis' => 'sk_pengangkatan',
+            'folder' => 'SK_PENGANGKATAN',
+            'label' => 'SK_PENGANGKATAN'
+        ],
+        'spt' => [
+            'jenis' => 'spt_pph21',
+            'folder' => 'SPT',
+            'label' => 'SPT'
+        ],
+        'rekening_koran' => [
+            'jenis' => 'rekening_koran',
+            'folder' => 'REKENING_KORAN',
+            'label' => 'REKENING_KORAN'
+        ],
+        'slik' => [
+            'jenis' => 'slik_ojk',
+            'folder' => 'SLIK',
+            'label' => 'SLIK'
+        ],
+        'tagihan_kartu_kredit' => [
+            'jenis' => 'tagihan_kartu_kredit',
+            'folder' => 'TAGIHAN_KK',
+            'label' => 'TAGIHAN_KK'
+        ],
+        'bukti_cicilan' => [
+            'jenis' => 'bukti_cicilan_aktif',
+            'folder' => 'BUKTI_CICILAN',
+            'label' => 'BUKTI_CICILAN'
+        ],
+        'izin_usaha' => [
+            'jenis' => 'siup_nib',
+            'folder' => 'IZIN_USAHA',
+            'label' => 'IZIN_USAHA'
+        ],
+        'laporan_keuangan' => [
+            'jenis' => 'laporan_keuangan_usaha',
+            'folder' => 'LAPORAN_KEUANGAN',
+            'label' => 'LAPORAN_KEUANGAN'
+        ],
+        'rekening_usaha' => [
+            'jenis' => 'rekening_koran_usaha',
+            'folder' => 'REKENING_USAHA',
+            'label' => 'REKENING_USAHA'
+        ],
+        'sip' => [
+            'jenis' => 'surat_izin_praktik',
+            'folder' => 'SIP',
+            'label' => 'SIP'
+        ],
     ];
 
+    
+    /**
+     * Ambil nama lengkap debitur dari tabel users
+     */
+    private function getDebiturFullName(int $userId): string
+    {
+        // Ambil dari tabel users
+        $user = User::find($userId);
+        
+        if ($user && !empty($user->nama_lengkap)) {
+            return $user->nama_lengkap;
+        }
+        
+        // Fallback ke name jika ada
+        if ($user && !empty($user->name)) {
+            return $user->name;
+        }
+        
+        // Fallback terakhir
+        return 'Debitur_' . $userId;
+    }
+
+    /**
+     * Generate nama file yang terstruktur
+     * Format: JENIS_KODE_PENGAJUAN_NAMA_LENGKAP[_SEQUENCE].ext
+     * Contoh: KTP_KPR-20260515-9131F_Budi_Santoso_Debug.pdf
+     */
+    private function generateFileName(
+        string $jenisLabel,
+        string $kodePengajuan,
+        string $namaLengkap,
+        UploadedFile $file,
+        int $sequence = 0
+    ): string {
+        // Bersihkan nama lengkap untuk nama file (hilangkan spasi, ganti underscore)
+        $cleanName = preg_replace('/[^a-zA-Z0-9]/', '_', $namaLengkap);
+        $cleanName = trim(preg_replace('/_+/', '_', $cleanName), '_');
+        
+        // Ambil ekstensi file asli
+        $extension = $file->getClientOriginalExtension();
+        
+        // Jika ekstensi kosong, ambil dari MIME type
+        if (empty($extension)) {
+            $mimeMap = [
+                'application/pdf' => 'pdf',
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/jpg' => 'jpg',
+                'image/gif' => 'gif',
+            ];
+            $extension = $mimeMap[$file->getMimeType()] ?? 'bin';
+        }
+        
+        // Format nama file: JENIS_KODE_PENGAJUAN_NAMA_LENGKAP[_SEQUENCE].ext
+        $baseName = "{$jenisLabel}_{$kodePengajuan}_{$cleanName}";
+        
+        if ($sequence > 0) {
+            $baseName .= "_{$sequence}";
+        }
+        
+        return $baseName . '.' . $extension;
+    }
+
+    /**
+     * Upload dokumen dengan struktur folder dan penamaan yang teratur
+     * Struktur: dokumen/pengajuan/{id}/{FOLDER}/{FILE}
+     * Contoh: dokumen/pengajuan/9/KTP/KTP_KPR-20260515-9131F_Budi_Santoso.pdf
+     */
     private function uploadDokumen(Pengajuan $pengajuan, array $files): void
     {
         Log::info('[DebiturPengajuanService] uploadDokumen started', [
@@ -403,51 +540,108 @@ class DebiturPengajuanService
             'files_count' => count($files)
         ]);
 
+        // Ambil nama lengkap debitur
+        $namaLengkap = $this->getDebiturFullName($pengajuan->user_id);
         $basePath = "dokumen/pengajuan/{$pengajuan->id}";
-        Log::info('[DebiturPengajuanService] Base storage path', ['path' => $basePath]);
+        $kodePengajuan = $pengajuan->kode_pengajuan;
+        
+        // Cek dan buat private disk jika perlu
+        if (!Storage::disk('private')->exists('/')) {
+            Storage::disk('private')->makeDirectory('/');
+            Log::info('[DebiturPengajuanService] Created private disk directory');
+        }
+        
+        // Buat folder utama pengajuan
+        if (!Storage::disk('private')->exists($basePath)) {
+            Storage::disk('private')->makeDirectory($basePath);
+            Log::info('[DebiturPengajuanService] Created main directory', ['path' => $basePath]);
+        }
 
         $uploadedCount = 0;
         $errorCount = 0;
 
-        foreach (self::DOKUMEN_MAP as $inputName => $jenisDokumen) {
+        foreach (self::DOKUMEN_CONFIG as $inputName => $config) {
             if (!isset($files[$inputName])) {
-                Log::debug('[DebiturPengajuanService] Input not found in files', ['input_name' => $inputName]);
+                Log::debug('[DebiturPengajuanService] Input not found', ['input' => $inputName]);
                 continue;
             }
 
+            // Normalisasi ke array (support multiple files)
             $fileList = is_array($files[$inputName]) ? $files[$inputName] : [$files[$inputName]];
-            Log::info('[DebiturPengajuanService] Processing files for input', [
-                'input_name' => $inputName,
-                'jenis_dokumen' => $jenisDokumen,
-                'file_count' => count($fileList)
+            $fileList = array_filter($fileList, function($file) {
+                return $file instanceof UploadedFile && $file->isValid();
+            });
+            
+            if (empty($fileList)) {
+                Log::warning('[DebiturPengajuanService] No valid file objects', ['input' => $inputName]);
+                continue;
+            }
+
+            $jenisDokumen = $config['jenis'];
+            $folderName = $config['folder'];
+            $jenisLabel = $config['label'];
+            
+            // Buat folder spesifik untuk jenis dokumen ini
+            $dokumenFolder = $basePath . '/' . $folderName;
+            if (!Storage::disk('private')->exists($dokumenFolder)) {
+                Storage::disk('private')->makeDirectory($dokumenFolder);
+                Log::info('[DebiturPengajuanService] Created sub-directory', ['path' => $dokumenFolder]);
+            }
+            
+            Log::info('[DebiturPengajuanService] Processing files', [
+                'input' => $inputName,
+                'jenis' => $jenisDokumen,
+                'folder' => $folderName,
+                'count' => count($fileList)
             ]);
 
-            foreach ($fileList as $file) {
-                if (!$file || !$file->isValid()) {
-                    Log::warning('[DebiturPengajuanService] Invalid file skipped', [
-                        'input_name' => $inputName,
-                        'file_exists' => !is_null($file),
-                        'is_valid' => $file ? $file->isValid() : false
-                    ]);
-                    $errorCount++;
-                    continue;
-                }
-
+            // Proses setiap file (support multiple files per jenis)
+            $isMultiple = count($fileList) > 1;
+            
+            foreach ($fileList as $index => $file) {
                 try {
-                    $originalName = $file->getClientOriginalName();
-                    Log::info('[DebiturPengajuanService] Uploading file', [
-                        'original_name' => $originalName,
-                        'size' => $file->getSize(),
-                        'mime' => $file->getMimeType()
-                    ]);
-
-                    $stored = $file->store($basePath, 'private');
+                    // Validasi ukuran file (max 5MB)
+                    if ($file->getSize() > 5 * 1024 * 1024) {
+                        Log::warning('[DebiturPengajuanService] File too large', [
+                            'input' => $inputName,
+                            'size' => $file->getSize(),
+                            'max' => '5MB'
+                        ]);
+                        $errorCount++;
+                        continue;
+                    }
                     
+                    // Generate sequence number untuk multiple files
+                    $sequence = $isMultiple ? $index + 1 : 0;
+                    
+                    // Generate nama file yang terstruktur
+                    $fileName = $this->generateFileName(
+                        $jenisLabel,
+                        $kodePengajuan,
+                        $namaLengkap,
+                        $file,
+                        $sequence
+                    );
+                    
+                    $fullPath = $dokumenFolder . '/' . $fileName;
+                    
+                    // Simpan file
+                    $stored = Storage::disk('private')->putFileAs(
+                        $dokumenFolder, 
+                        $file, 
+                        $fileName
+                    );
+                    
+                    if (!$stored) {
+                        throw new \Exception('Failed to store file');
+                    }
+                    
+                    // Simpan ke database
                     DokumenPengajuan::create([
                         'pengajuan_id'       => $pengajuan->id,
                         'jenis_dokumen'      => $jenisDokumen,
-                        'nama_file'          => $originalName,
-                        'path_file'          => $stored,
+                        'nama_file'          => $fileName,
+                        'path_file'          => $fullPath,
                         'ukuran_file'        => $file->getSize(),
                         'mime_type'          => $file->getMimeType(),
                         'status_verifikasi'  => 'belum_diperiksa',
@@ -455,20 +649,25 @@ class DebiturPengajuanService
                     
                     $uploadedCount++;
                     Log::info('[DebiturPengajuanService] File uploaded successfully', [
-                        'stored_path' => $stored,
-                        'jenis_dokumen' => $jenisDokumen
+                        'jenis' => $jenisDokumen,
+                        'folder' => $folderName,
+                        'file_name' => $fileName,
+                        'size' => $file->getSize()
                     ]);
                     
                 } catch (\Exception $e) {
                     $errorCount++;
                     Log::error('[DebiturPengajuanService] Failed to upload file', [
-                        'input_name' => $inputName,
-                        'jenis_dokumen' => $jenisDokumen,
-                        'original_name' => $originalName ?? 'unknown',
+                        'input' => $inputName,
+                        'jenis' => $jenisDokumen,
                         'error' => $e->getMessage()
                     ]);
                 }
             }
+        }
+
+        if ($uploadedCount === 0 && $errorCount > 0) {
+            throw new \Exception('Gagal mengupload dokumen. Pastikan file valid dan ukuran tidak melebihi 5MB.');
         }
 
         Log::info('[DebiturPengajuanService] uploadDokumen completed', [

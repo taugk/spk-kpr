@@ -154,6 +154,18 @@ class Pengajuan extends Model
         return $this->hasMany(RiwayatStatus::class, 'pengajuan_id', 'id');
     }
 
+    public function debiturDokumen(){
+        return $this->hasMany(DokumenPengajuan::class, 'dokumen_id', 'id');
+    }
+
+    /**
+     * Relasi ke Penilaian (satu pengajuan memiliki satu penilaian)
+     */
+    public function penilaian()
+    {
+        return $this->hasOne(Penilaian::class, 'pengajuan_id', 'id');
+    }
+
     /**
      * Get all status options
      */

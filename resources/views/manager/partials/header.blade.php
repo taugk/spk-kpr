@@ -1,13 +1,13 @@
 <div class="header">
     <div class="header-left">
         <div class="menu-icon dw dw-menu"></div>
-        
+
         <div class="header-search">
-            <form action="{{ route('manager.pengajuan.index') }}" method="GET">
+            <form action="{{ route('manager.pengajuan.semua') }}" method="GET">
                 <div class="form-group mb-0 position-relative">
                     <i class="dw dw-search2 search-icon"></i>
                     <input type="text" name="q" class="form-control search-input" placeholder="Cari kode, debitur, unit...">
-                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -34,10 +34,19 @@
                         <ul>
                             @forelse(($notifications ?? collect()) as $notification)
                                 <li>
-                                    <a href="{{ $notification->pengajuan_id ? route('manager.pengajuan.show', $notification->pengajuan_id) : '#' }}">
+                                    @php
+                                        // Cek apakah $notification adalah object atau array
+                                        $pengajuanId = is_object($notification) ? ($notification->pengajuan_id ?? null) : ($notification['pengajuan_id'] ?? null);
+                                        $judul = is_object($notification) ? ($notification->judul ?? 'Notifikasi') : ($notification['judul'] ?? 'Notifikasi');
+                                        $pesan = is_object($notification) ? ($notification->pesan ?? '') : ($notification['pesan'] ?? '');
+                                        $createdAt = is_object($notification) ? ($notification->created_at ?? now()) : ($notification['created_at'] ?? now());
+                                    @endphp
+                                    <a href="{{ $pengajuanId ? route('manager.pengajuan.show', $pengajuanId) : '#' }}">
                                         <img src="{{ asset('deskapp/vendors/images/img.jpg') }}" alt="">
-                                        <h3 class="clearfix">{{ $notification->judul }} <span>{{ $notification->created_at->diffForHumans() }}</span></h3>
-                                        <p>{{ Str::limit($notification->pesan, 70) }}</p>
+                                        <h3 class="clearfix">{{ $judul }}
+                                            <span>{{ $createdAt instanceof \Carbon\Carbon ? $createdAt->diffForHumans() : now()->diffForHumans() }}</span>
+                                        </h3>
+                                        <p>{{ Str::limit($pesan, 70) }}</p>
                                     </a>
                                 </li>
                             @empty
@@ -56,18 +65,16 @@
                         <img src="{{ Auth::check() && Auth::user()->foto_profil
                                 ? asset('storage/' . Auth::user()->foto_profil)
                                 : asset('assets/images/default-avatar.png') }}"
-                                alt="User Profile"
-                            >
+                                alt="User Profile">
                     </span>
-                    <span class="user-name">{{ Auth::check() ? Auth::user()->nama_lengkap : 'manageristrator' }}</span>
+                    <span class="user-name">{{ Auth::check() ? Auth::user()->nama_lengkap : 'Manajer' }}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list">
                     <a class="dropdown-item" href="#"><i class="dw dw-user1"></i> Profil</a>
-                    <a class="dropdown-item" href="{{ route('manager.pengaturan.index') }}"><i class="dw dw-settings2"></i> Pengaturan</a>
                     <div class="dropdown-divider"></div>
-                    <form action="{{ route('logout') }}" method="POST" id="logout-form">
+                    <form action="{{ route('logout') }}" method="POST" id="logout-form" class="d-inline">
                         @csrf
-                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-left">
+                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent" style="width: 100%; text-align: left;">
                             <i class="dw dw-logout"></i> Keluar
                         </button>
                     </form>

@@ -177,10 +177,12 @@ body {
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 20px;
+    display: inline-block;
 }
 .doc-status.valid { background: var(--success-light); color: var(--success); }
 .doc-status.invalid { background: var(--danger-light); color: var(--danger); }
 .doc-status.pending { background: var(--warning-light); color: var(--warning); }
+.doc-status.warning { background: var(--warning-light); color: var(--warning); }
 
 /* Timeline */
 .timeline {
@@ -289,12 +291,72 @@ body {
     margin-top: 5px;
 }
 
+/* Modal Preview */
+.modal-preview-content {
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+.preview-loading {
+    text-align: center;
+}
+.preview-loading i {
+    font-size: 2rem;
+    color: var(--primary);
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 @keyframes fadeUp {
     from { opacity:0; transform:translateY(14px); }
     to { opacity:1; transform:translateY(0); }
 }
 .card {
     animation: fadeUp .3s ease both;
+}
+
+/* Verification Status Select */
+.verif-status-select {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.verif-status-select.status-valid {
+    background: var(--success-light);
+    color: var(--success);
+    border-color: var(--success);
+}
+.verif-status-select.status-invalid {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+.verif-status-select.status-pending {
+    background: var(--warning-light);
+    color: var(--warning);
+    border-color: var(--warning);
+}
+.verif-status-select:hover {
+    transform: translateY(-1px);
+}
+
+.save-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    color: var(--success);
+    font-size: 12px;
 }
 </style>
 @endpush
@@ -316,9 +378,12 @@ body {
                 <i class="dw dw-arrow-left"></i> Kembali
             </a>
             @if(in_array($pengajuan->status, ['submitted', 'verifikasi_marketing']))
-                <a href="{{ route('marketing.verifikasi.dokumen.create', $pengajuan) }}" class="btn-action primary">
-                    <i class="dw dw-edit-2"></i> Verifikasi Pengajuan
-                </a>
+                <form action="{{ route('marketing.pengajuan.ambil', $pengajuan) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn-action primary" style="border: none; cursor: pointer;">
+                        <i class="dw dw-edit-2"></i> Verifikasi Pengajuan
+                    </button>
+                </form>
             @endif
         </div>
     </div>
@@ -394,7 +459,7 @@ body {
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Status Perkawinan</div>
-                                <div class="info-value">{{ $pengajuan->debiturPribadi->status_perkawinan ?? '-' }}</div>
+                                <div class="info-value">{{ $pengajuan->debiturPribadi->status_pernikahan ?? '-' }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -410,10 +475,6 @@ body {
                                 <div class="info-label">Alamat KTP</div>
                                 <div class="info-value">{{ $pengajuan->debiturPribadi->alamat_ktp ?? '-' }}</div>
                             </div>
-                            <div class="info-row">
-                                <div class="info-label">Alamat Domisili</div>
-                                <div class="info-value">{{ $pengajuan->debiturPribadi->alamat_domisili ?? '-' }}</div>
-                            </div>
                         </div>
                     </div>
 
@@ -423,7 +484,7 @@ body {
                         <div class="col-md-6">
                             <div class="info-row">
                                 <div class="info-label">Pekerjaan</div>
-                                <div class="info-value">{{ $pengajuan->debiturPekerjaan->jenis_pekerjaan ?? '-' }}</div>
+                                <div class="info-value">{{ $pengajuan->debiturPekerjaan->jabatan ?? '-' }}</div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Nama Perusahaan</div>
@@ -439,7 +500,7 @@ body {
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Lama Bekerja</div>
-                                <div class="info-value">{{ $pengajuan->debiturPekerjaan->lama_bekerja ?? '-' }} Tahun</div>
+                                <div class="info-value">{{ $pengajuan->debiturPekerjaan->lama_bekerja_tahun ?? '-' }} Tahun</div>
                             </div>
                         </div>
                     </div>
@@ -488,7 +549,7 @@ body {
                             <div class="info-row">
                                 <div class="info-label">DP / Uang Muka</div>
                                 <div class="info-value">
-                                    {{ App\Helpers\MarketingHelper::formatRupiah($pengajuan->dp ?? 0) }}
+                                    {{ App\Helpers\MarketingHelper::formatRupiah($pengajuan->uang_muka ?? 0) }}
                                 </div>
                             </div>
                             <div class="info-row">
@@ -513,57 +574,7 @@ body {
                 </div>
             </div>
 
-            {{-- Financial Capability (Debt to Income) --}}
-            @if(isset($kemampuanBayar))
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="card-title">
-                        <i class="dw dw-analytics" style="color:var(--primary)"></i>
-                        Analisis Kemampuan Bayar (Debt to Income Ratio)
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="score-card">
-                                <div class="score-value">{{ $kemampuanBayar['dsr'] ?? 0 }}%</div>
-                                <div class="score-label">DSR</div>
-                            </div>
-                        </div>
-                        <div class="col-md-9">
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="info-row">
-                                        <div class="info-label">Penghasilan Bulanan</div>
-                                        <div class="info-value">{{ App\Helpers\MarketingHelper::formatRupiah($kemampuanBayar['penghasilan_bulanan'] ?? 0) }}</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="info-label">Estimasi Angsuran</div>
-                                        <div class="info-value">{{ App\Helpers\MarketingHelper::formatRupiah($kemampuanBayar['estimasi_angsuran'] ?? 0) }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="info-row">
-                                        <div class="info-label">Cicilan Lain</div>
-                                        <div class="info-value">{{ App\Helpers\MarketingHelper::formatRupiah($kemampuanBayar['cicilan_lain'] ?? 0) }}</div>
-                                    </div>
-                                    <div class="info-row">
-                                        <div class="info-label">Total Kewajiban</div>
-                                        <div class="info-value">{{ App\Helpers\MarketingHelper::formatRupiah($kemampuanBayar['total_kewajiban'] ?? 0) }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="alert alert-{{ $kemampuanBayar['status'] == 'aman' ? 'success' : ($kemampuanBayar['status'] == 'waspada' ? 'warning' : 'danger') }} mt-2 mb-0">
-                                <i class="dw dw-info-circle"></i>
-                                {{ $kemampuanBayar['keterangan'] ?? '' }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            {{-- Submitted Documents --}}
+            {{-- Submitted Documents with Verification Status --}}
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title">
@@ -572,79 +583,110 @@ body {
                     </h6>
                 </div>
                 <div class="card-body">
-                    @php
-                        $dokumenList = [
-                            'ktp' => ['icon' => 'dw dw-id-card', 'name' => 'KTP / Identitas'],
-                            'kk' => ['icon' => 'dw dw-house', 'name' => 'Kartu Keluarga'],
-                            'slip_gaji' => ['icon' => 'dw dw-money', 'name' => 'Slip Gaji'],
-                            'rek_koran' => ['icon' => 'dw dw-file', 'name' => 'Rekening Koran'],
-                            'slik' => ['icon' => 'dw dw-analytics', 'name' => 'SLIK OJK'],
-                            'surat_kerja' => ['icon' => 'dw dw-file-31', 'name' => 'Surat Keterangan Kerja'],
-                            'npwp' => ['icon' => 'dw dw-id-card', 'name' => 'NPWP'],
-                        ];
-                    @endphp
-                    <div class="row">
-                        @foreach($dokumenList as $jenis => $info)
-                            @php
-                                $dok = $pengajuan->dokumen->where('jenis_dokumen', $jenis)->first();
-                                $verif = $pengajuan->verifikasiMarketing;
-                                $isValid = null;
-                                if ($verif) {
-                                    $fieldMap = [
-                                        'ktp' => 'dok_ktp_valid',
-                                        'kk' => 'dok_kk_valid',
-                                        'slip_gaji' => 'dok_slip_gaji_valid',
-                                        'rek_koran' => 'dok_rek_koran_valid',
-                                        'slik' => 'dok_slik_valid',
-                                        'surat_kerja' => 'dok_surat_kerja_valid',
-                                        'npwp' => 'dok_npwp_valid',
-                                    ];
-                                    $field = $fieldMap[$jenis] ?? null;
-                                    if ($field && isset($verif->$field)) {
-                                        $isValid = $verif->$field;
-                                    }
-                                }
-                            @endphp
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="doc-card">
-                                    <div class="d-flex align-items-start gap-3">
-                                        <div class="doc-icon">
-                                            <i class="{{ $info['icon'] }}"></i>
+                    <div class="row" id="documentList">
+                        @forelse($pengajuan->dokumen as $dokumen)
+                        @php
+                            // Ambil status verifikasi dari data verifikasi marketing
+                            $verifikasi = $pengajuan->verifikasiMarketing;
+                            $statusMap = [
+                                'dok_ktp_valid' => 'ktp',
+                                'dok_kk_valid' => 'kk',
+                                'dok_npwp_valid' => 'npwp',
+                                'dok_slip_gaji_valid' => 'slip_gaji',
+                                'dok_rek_koran_valid' => 'rekening_koran',
+                                'dok_slik_valid' => 'slik',
+                                'dok_surat_kerja_valid' => 'sk_kerja',
+                            ];
+                            $fieldName = array_search($dokumen->jenis_dokumen, $statusMap);
+                            $statusValid = $verifikasi && $fieldName ? ($verifikasi->$fieldName ?? null) : null;
+                            $statusText = '';
+                            $statusClass = 'pending';
+                            if ($statusValid === true) {
+                                $statusText = 'Valid';
+                                $statusClass = 'valid';
+                            } elseif ($statusValid === false) {
+                                $statusText = 'Tidak Valid';
+                                $statusClass = 'invalid';
+                            } else {
+                                $statusText = 'Belum Diverifikasi';
+                                $statusClass = 'pending';
+                            }
+                        @endphp
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="doc-card" data-dokumen-id="{{ $dokumen->id }}">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="doc-icon">
+                                        @php
+                                            $icons = [
+                                                'ktp' => 'dw dw-id-card',
+                                                'kk' => 'dw dw-house',
+                                                'npwp' => 'dw dw-id-card',
+                                                'slip_gaji' => 'dw dw-money',
+                                                'rekening_koran' => 'dw dw-file',
+                                                'sk_kerja' => 'dw dw-file-31',
+                                                'surat_keterangan_kerja' => 'dw dw-file-31',
+                                                'slik' => 'dw dw-analytics',
+                                                'slik_ojk' => 'dw dw-analytics',
+                                                'buku_nikah' => 'dw dw-heart',
+                                                'ktp_pasangan' => 'dw dw-id-card',
+                                                'foto_diri' => 'dw dw-camera',
+                                                'pas_foto' => 'dw dw-camera',
+                                            ];
+                                            $icon = $icons[$dokumen->jenis_dokumen] ?? 'dw dw-file';
+                                        @endphp
+                                        <i class="{{ $icon }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div style="font-weight:600;font-size:.85rem">
+                                            {{ ucfirst(str_replace('_', ' ', $dokumen->jenis_dokumen)) }}
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <div style="font-weight:600;font-size:.85rem">{{ $info['name'] }}</div>
-                                            <div style="font-size:.7rem;color:var(--muted)">{{ ucfirst($jenis) }}</div>
-                                            @if($dok)
-                                                <div style="font-size:.7rem;margin-top:5px">
-                                                    <i class="dw dw-check-circle"></i> Terupload
-                                                    <br><small>{{ $dok->file_name }}</small>
-                                                </div>
-                                                @if(!is_null($isValid))
-                                                    <span class="doc-status {{ $isValid ? 'valid' : 'invalid' }} mt-2 d-inline-block">
-                                                        <i class="dw {{ $isValid ? 'dw-check' : 'dw-cancel' }}"></i>
-                                                        {{ $isValid ? 'Valid' : 'Tidak Valid' }}
-                                                    </span>
-                                                @else
-                                                    <span class="doc-status pending mt-2 d-inline-block">
-                                                        <i class="dw dw-hourglass"></i> Belum Diverifikasi
-                                                    </span>
-                                                @endif
-                                            @else
-                                                <div style="font-size:.7rem;color:var(--danger);margin-top:5px">
-                                                    <i class="dw dw-cancel"></i> Belum diupload
-                                                </div>
+                                        <div style="font-size:.7rem;color:var(--muted)">
+                                            {{ strlen($dokumen->nama_file) > 30 ? substr($dokumen->nama_file, 0, 30) . '...' : $dokumen->nama_file }}
+                                        </div>
+                                        <div style="font-size:.65rem;color:var(--muted)">
+                                            {{ number_format($dokumen->ukuran_file / 1024, 2) }} KB
+                                        </div>
+                                        <div class="mt-2">
+                                            <span class="doc-status {{ $statusClass }}">
+                                                <i class="dw {{ $statusValid === true ? 'dw-check' : ($statusValid === false ? 'dw-close' : 'dw-time') }}"></i>
+                                                {{ $statusText }}
+                                            </span>
+                                        </div>
+                                        @php
+                                            $isImage = in_array($dokumen->mime_type, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']);
+                                            $isPdf = $dokumen->mime_type === 'application/pdf';
+                                        @endphp
+                                        <div class="mt-2">
+                                            @if($isImage || $isPdf)
+                                                <button type="button" 
+                                                        class="btn-preview-doc" 
+                                                        data-path="{{ $dokumen->path_file }}"
+                                                        data-nama="{{ $dokumen->nama_file }}"
+                                                        data-mime="{{ $dokumen->mime_type }}"
+                                                        style="background:var(--primary-light);border:none;border-radius:6px;padding:4px 10px;font-size:.7rem;color:var(--primary);margin-right:5px;">
+                                                    <i class="dw dw-eye"></i> Preview
+                                                </button>
                                             @endif
+                                            <button type="button" 
+                                                    class="btn-download-doc" 
+                                                    data-path="{{ $dokumen->path_file }}"
+                                                    data-nama="{{ $dokumen->nama_file }}"
+                                                    style="background:var(--primary);border:none;border-radius:6px;padding:4px 10px;font-size:.7rem;color:white;">
+                                                <i class="dw dw-download"></i> Download
+                                            </button>
                                         </div>
-                                        @if($dok)
-                                            <a href="{{ route('marketing.verifikasi.download-dokumen', $dok) }}"
-                                               class="text-muted" title="Download">
-                                                <i class="dw dw-download"></i>
-                                            </a>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        </div>
+                        @empty
+                        <div class="col-12">
+                            <div class="text-center py-4">
+                                <i class="dw dw-inbox" style="font-size:2rem;color:var(--muted)"></i>
+                                <p class="mt-2 text-muted">Belum ada dokumen yang diupload</p>
+                            </div>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -712,60 +754,70 @@ body {
             </div>
             @endif
 
-            {{-- Document Verification Status --}}
-            @if($pengajuan->verifikasiMarketing)
+            {{-- Document Verification Summary --}}
             <div class="card">
                 <div class="card-header">
                     <h6 class="card-title">
                         <i class="dw dw-check" style="color:var(--primary)"></i>
-                        Status Verifikasi Dokumen
+                        Ringkasan Verifikasi Dokumen
                     </h6>
                 </div>
                 <div class="card-body">
                     @php
-                        $docFields = [
-                            'dok_ktp_valid' => 'KTP',
-                            'dok_kk_valid' => 'Kartu Keluarga',
-                            'dok_slip_gaji_valid' => 'Slip Gaji',
-                            'dok_rek_koran_valid' => 'Rekening Koran',
-                            'dok_slik_valid' => 'SLIK',
-                            'dok_surat_kerja_valid' => 'Surat Kerja',
-                            'dok_npwp_valid' => 'NPWP',
+                        $totalDocs = $pengajuan->dokumen->count();
+                        $validDocs = 0;
+                        $invalidDocs = 0;
+                        $pendingDocs = 0;
+                        
+                        $verifikasi = $pengajuan->verifikasiMarketing;
+                        $statusMap = [
+                            'dok_ktp_valid' => 'ktp',
+                            'dok_kk_valid' => 'kk',
+                            'dok_npwp_valid' => 'npwp',
+                            'dok_slip_gaji_valid' => 'slip_gaji',
+                            'dok_rek_koran_valid' => 'rekening_koran',
+                            'dok_slik_valid' => 'slik',
+                            'dok_surat_kerja_valid' => 'sk_kerja',
                         ];
-                        $validCount = 0;
-                        $totalCount = 0;
-                        foreach ($docFields as $field => $label) {
-                            if (!is_null($pengajuan->verifikasiMarketing->$field)) {
-                                $totalCount++;
-                                if ($pengajuan->verifikasiMarketing->$field) $validCount++;
+                        
+                        foreach ($pengajuan->dokumen as $doc) {
+                            $fieldName = array_search($doc->jenis_dokumen, $statusMap);
+                            $status = $verifikasi && $fieldName ? ($verifikasi->$fieldName ?? null) : null;
+                            
+                            if ($status === true) {
+                                $validDocs++;
+                            } elseif ($status === false) {
+                                $invalidDocs++;
+                            } else {
+                                $pendingDocs++;
                             }
                         }
                     @endphp
                     <div class="text-center mb-3">
                         <div style="font-size:2rem;font-weight:800;color:var(--primary)">
-                            {{ $validCount }}/{{ $totalCount }}
+                            {{ $validDocs }}/{{ $totalDocs }}
                         </div>
                         <small class="text-muted">Dokumen Valid</small>
                     </div>
                     <div class="progress mb-3" style="height:8px">
-                        <div class="progress-bar bg-success" style="width:{{ $totalCount > 0 ? ($validCount/$totalCount)*100 : 0 }}%"></div>
+                        <div class="progress-bar bg-success" style="width:{{ $totalDocs > 0 ? ($validDocs/$totalDocs)*100 : 0 }}%"></div>
                     </div>
-                    @foreach($docFields as $field => $label)
-                        @php
-                            $value = $pengajuan->verifikasiMarketing->$field;
-                        @endphp
-                        @if(!is_null($value))
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span style="font-size:.75rem">{{ $label }}</span>
-                            <span class="badge badge-{{ $value ? 'success' : 'danger' }}">
-                                {{ $value ? 'Valid' : 'Tidak Valid' }}
-                            </span>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-success font-weight-bold">{{ $validDocs }}</div>
+                            <small class="text-muted">Valid</small>
                         </div>
-                        @endif
-                    @endforeach
+                        <div class="col-4">
+                            <div class="text-danger font-weight-bold">{{ $invalidDocs }}</div>
+                            <small class="text-muted">Tidak Valid</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-warning font-weight-bold">{{ $pendingDocs }}</div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-            @endif
 
             {{-- Status Timeline --}}
             <div class="card">
@@ -829,9 +881,9 @@ body {
                 <div class="card-body">
                     <div class="d-flex flex-column gap-2">
                         @if(in_array($pengajuan->status, ['submitted', 'verifikasi_marketing']))
-                            <a href="{{ route('marketing.verifikasi.dokumen.create', $pengajuan) }}" class="btn-action primary justify-content-center">
+                            <button type="button" class="btn-action primary justify-content-center" id="btnVerifikasi">
                                 <i class="dw dw-edit-2"></i> Verifikasi Pengajuan
-                            </a>
+                            </button>
                         @endif
                         <a href="{{ route('marketing.pengajuan.show', $pengajuan) }}" class="btn-action secondary justify-content-center" onclick="window.print();return false;">
                             <i class="dw dw-printer"></i> Cetak Detail
@@ -844,4 +896,224 @@ body {
     </div>
 
 </div>
+
+{{-- Modal Preview Dokumen --}}
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: var(--radius);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border);">
+                <h6 class="modal-title" id="previewModalLabel">
+                    <i class="dw dw-eye"></i> Preview Dokumen
+                </h6>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; line-height: 1;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div id="previewContent" class="modal-preview-content">
+                    <div class="preview-loading">
+                        <i class="dw dw-loading"></i>
+                        <p class="mt-2">Memuat dokumen...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" id="downloadFromModal" class="btn btn-primary">
+                    <i class="dw dw-download"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+// Base URL untuk akses file
+const baseUrl = '{{ url("/") }}';
+let currentBlobUrl = null;
+
+// Tombol Verifikasi
+document.getElementById('btnVerifikasi')?.addEventListener('click', function() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ route("marketing.pengajuan.ambil", $pengajuan) }}';
+    
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+    
+    document.body.appendChild(form);
+    form.submit();
+});
+
+// Fungsi untuk download file via AJAX
+async function downloadFileViaAjax(path, fileName) {
+    try {
+        const response = await fetch('{{ route("marketing.verifikasi.get-file") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ path: path })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Download failed');
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        return true;
+    } catch (error) {
+        console.error('Download error:', error);
+        const downloadUrl = `{{ url("/marketing/verifikasi/download-dokumen") }}/${encodeURIComponent(path)}`;
+        window.open(downloadUrl, '_blank');
+        return false;
+    }
+}
+
+// Fungsi untuk preview file
+async function previewDocument(path, fileName, mimeType) {
+    const modalElement = document.getElementById('previewModal');
+    const modal = new bootstrap.Modal(modalElement);
+    const previewContent = document.getElementById('previewContent');
+    const modalTitle = document.getElementById('previewModalLabel');
+    const downloadBtn = document.getElementById('downloadFromModal');
+    
+    // Reset content
+    previewContent.innerHTML = `
+        <div class="preview-loading">
+            <i class="dw dw-loading"></i>
+            <p class="mt-2">Memuat dokumen...</p>
+        </div>
+    `;
+    modalTitle.innerHTML = `<i class="dw dw-eye"></i> Preview: ${fileName}`;
+    
+    // Show modal
+    modal.show();
+    
+    try {
+        const response = await fetch('{{ route("marketing.verifikasi.get-file") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ path: path })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load file');
+        }
+        
+        const blob = await response.blob();
+        
+        if (currentBlobUrl) {
+            URL.revokeObjectURL(currentBlobUrl);
+        }
+        
+        currentBlobUrl = URL.createObjectURL(blob);
+        
+        downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.href = currentBlobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        
+        previewContent.innerHTML = '';
+        
+        if (mimeType.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = currentBlobUrl;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '70vh';
+            img.style.objectFit = 'contain';
+            img.style.borderRadius = '0 0 var(--radius) var(--radius)';
+            previewContent.appendChild(img);
+        } 
+        else if (mimeType === 'application/pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = currentBlobUrl;
+            iframe.style.width = '100%';
+            iframe.style.height = '70vh';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '0 0 var(--radius) var(--radius)';
+            previewContent.appendChild(iframe);
+        }
+        else {
+            previewContent.innerHTML = `
+                <div class="text-center p-5">
+                    <i class="dw dw-file" style="font-size: 3rem; color: var(--muted);"></i>
+                    <p class="mt-3">Preview tidak tersedia untuk tipe file ini</p>
+                    <p class="text-muted small">Tipe file: ${mimeType}</p>
+                    <button class="btn btn-primary mt-2" onclick="document.getElementById('downloadFromModal').click()">
+                        <i class="dw dw-download"></i> Download File
+                    </button>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Preview error:', error);
+        previewContent.innerHTML = `
+            <div class="text-center p-5">
+                <i class="dw dw-warning" style="font-size: 3rem; color: var(--danger);"></i>
+                <p class="mt-3 text-danger">Gagal memuat dokumen</p>
+                <p class="text-muted small">${error.message}</p>
+                <button class="btn btn-primary mt-2" onclick="window.open('{{ url("/marketing/verifikasi/download-dokumen") }}/${encodeURIComponent(path)}', '_blank')">
+                    <i class="dw dw-download"></i> Buka di Tab Baru
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Event listeners untuk tombol preview dan download
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview buttons
+    document.querySelectorAll('.btn-preview-doc').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const path = this.dataset.path;
+            const nama = this.dataset.nama;
+            const mime = this.dataset.mime;
+            previewDocument(path, nama, mime);
+        });
+    });
+    
+    // Download buttons
+    document.querySelectorAll('.btn-download-doc').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const path = this.dataset.path;
+            const nama = this.dataset.nama;
+            downloadFileViaAjax(path, nama);
+        });
+    });
+});
+
+// Cleanup blob URL when modal is closed
+document.getElementById('previewModal').addEventListener('hidden.bs.modal', function() {
+    if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = null;
+    }
+});
+</script>
+@endpush

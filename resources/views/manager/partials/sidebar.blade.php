@@ -2,7 +2,7 @@
 <div class="left-side-bar">
     {{-- Logo --}}
     <div class="brand-logo">
-        <a href="{{ route('manajer.dashboard') }}">
+        <a href="{{ route('manager.dashboard') }}">
             <img src="{{ asset('deskapp/vendors/images/deskapp-logo.svg') }}"
                 alt="Logo" class="dark-logo">
             <img src="{{ asset('deskapp/vendors/images/deskapp-logo-white.svg') }}"
@@ -20,9 +20,9 @@
 
                 {{-- DASHBOARD MONITORING --}}
                 <li>
-                    <a href="{{ route('manajer.dashboard') }}"
+                    <a href="{{ route('manager.dashboard') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.dashboard') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}">
                         <span class="micon dw dw-house-1"></span>
                         <span class="mtext">Dashboard</span>
                     </a>
@@ -34,19 +34,19 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.pengajuan.semua') }}"
+                    <a href="{{ route('manager.pengajuan.semua') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.pengajuan.semua') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.pengajuan.semua') ? 'active' : '' }}">
                         <span class="micon dw dw-file"></span>
                         <span class="mtext">Semua Pengajuan</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.pengajuan.proses') }}"
+                    <a href="{{ route('manager.pengajuan.proses') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.pengajuan.proses') ? 'active' : '' }}">
-                        <span class="micon dw dw-sync"></span>
+                            {{ request()->routeIs('manager.pengajuan.proses') ? 'active' : '' }}">
+                        <span class="micon dw dw-refresh1"></span>
                         <span class="mtext">Sedang Diproses</span>
                         @php
                             $sedangDiproses = \App\Models\Pengajuan::whereIn('status', [
@@ -62,9 +62,9 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.pengajuan.selesai') }}"
+                    <a href="{{ route('manager.pengajuan.selesai') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.pengajuan.selesai') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.pengajuan.selesai') ? 'active' : '' }}">
                         <span class="micon dw dw-check"></span>
                         <span class="mtext">Selesai Dinilai</span>
                     </a>
@@ -76,18 +76,18 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.kinerja.marketing') }}"
+                    <a href="{{ route('manager.kinerja.marketing') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.kinerja.marketing') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.kinerja.marketing') ? 'active' : '' }}">
                         <span class="micon dw dw-user"></span>
                         <span class="mtext">Kinerja Marketing</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.kinerja.admin') }}"
+                    <a href="{{ route('manager.kinerja.admin') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.kinerja.admin') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.kinerja.admin') ? 'active' : '' }}">
                         <span class="micon dw dw-settings"></span>
                         <span class="mtext">Kinerja Admin</span>
                     </a>
@@ -99,27 +99,27 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.laporan.bulanan') }}"
+                    <a href="{{ route('manager.laporan.bulanan') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.laporan.bulanan') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.laporan.bulanan') ? 'active' : '' }}">
                         <span class="micon dw dw-calendar"></span>
                         <span class="mtext">Laporan Bulanan</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.laporan.tahunan') }}"
+                    <a href="{{ route('manager.laporan.tahunan') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.laporan.tahunan') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.laporan.tahunan') ? 'active' : '' }}">
                         <span class="micon dw dw-pie-chart"></span>
                         <span class="mtext">Laporan Tahunan</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.laporan.export') }}"
+                    <a href="{{ route('manager.laporan.export') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.laporan.export') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.laporan.export') ? 'active' : '' }}">
                         <span class="micon dw dw-download"></span>
                         <span class="mtext">Export Data</span>
                     </a>
@@ -131,19 +131,19 @@
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.analisis.statistik') }}"
+                    <a href="{{ route('manager.analisis.statistik') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.analisis.statistik') ? 'active' : '' }}">
+                            {{ request()->routeIs('manager.analisis.statistik') ? 'active' : '' }}">
                         <span class="micon dw dw-analytics-21"></span>
                         <span class="mtext">Statistik Penilaian</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="{{ route('manajer.analisis.tren') }}"
+                    <a href="{{ route('manager.analisis.tren') }}"
                         class="dropdown-toggle no-arrow
-                            {{ request()->routeIs('manajer.analisis.tren') ? 'active' : '' }}">
-                        <span class="micon dw dw-line-chart"></span>
+                            {{ request()->routeIs('manager.analisis.tren') ? 'active' : '' }}">
+                        <span class="micon dw dw-analytics-3"></span>
                         <span class="mtext">Tren Pengajuan</span>
                     </a>
                 </li>

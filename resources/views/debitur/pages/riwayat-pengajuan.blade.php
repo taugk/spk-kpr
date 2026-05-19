@@ -607,11 +607,11 @@
 <script>
     const pengajuanData = @json($dataPengajuan);
     
-    // FIXED: Added trailing slashes to URLs
+    // ✅ PERBAIKAN: Gunakan route helper yang benar
     const routeBase = {
-        detail: `{{ url('/debitur/pengajuan/show') }}/`,
-        edit: `{{ url('/debitur/pengajuan-kpr/edit') }}/`,
-        delete: `{{ url('/debitur/pengajuan-kpr/delete') }}/`
+        detail: `{{ url('/debitur/pengajuan') }}`,
+        edit: `{{ url('/debitur/pengajuan') }}`,
+        destroy: `{{ url('/debitur/pengajuan') }}`
     };
 
     const searchInput = document.getElementById('searchInput');
@@ -657,6 +657,9 @@
             'pending': 'Pending',
             'diproses': 'Diproses',
             'menunggu': 'Menunggu',
+            'submitted': 'Submitted',
+            'verifikasi-marketing': 'Verifikasi Marketing',
+            'revisi-debitur': 'Revisi',
             'survey': 'Survey',
             'analisis': 'Analisis',
             'disetujui': 'Disetujui',
@@ -674,11 +677,25 @@
         const normalized = normalizeStatus(status);
 
         if (normalized === 'draft') return 'bi-pencil-square';
+        if (normalized === 'submitted') return 'bi-send';
         if (['disetujui', 'approved', 'layak'].includes(normalized)) return 'bi-check-circle';
         if (['ditolak', 'rejected', 'tidak-layak'].includes(normalized)) return 'bi-x-circle';
         if (['survey', 'analisis'].includes(normalized)) return 'bi-clipboard-data';
+        if (['verifikasi-marketing', 'revisi-debitur'].includes(normalized)) return 'bi-hourglass-split';
 
         return 'bi-hourglass-split';
+    }
+
+    function getBadgeClass(status) {
+        const normalized = normalizeStatus(status);
+        
+        if (normalized === 'draft') return 'badge-draft';
+        if (normalized === 'submitted') return 'badge-pending';
+        if (['disetujui', 'approved', 'layak'].includes(normalized)) return 'badge-disetujui';
+        if (['ditolak', 'rejected', 'tidak-layak'].includes(normalized)) return 'badge-ditolak';
+        if (['verifikasi-marketing', 'revisi-debitur', 'survey', 'analisis'].includes(normalized)) return 'badge-diproses';
+        
+        return 'badge-diproses';
     }
 
     function scoreColor(score) {
@@ -751,6 +768,10 @@
             const score = parseInt(item.skor) || 0;
             const canEdit = status === 'draft';
             const canDelete = status === 'draft';
+            
+            // ✅ PERBAIKAN: Buat URL dengan benar
+            const detailUrl = `${routeBase.detail}/${item.id}`;
+            const editUrl = `${routeBase.edit}/${item.id}`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -770,7 +791,7 @@
                     <div style="font-weight:700;">${item.tenor || 0} Tahun</div>
                 </td>
                 <td>
-                    <span class="badge-status badge-${status}">
+                    <span class="badge-status ${getBadgeClass(status)}">
                         <i class="bi ${statusIcon(status)}"></i>
                         ${statusLabel(status)}
                     </span>
@@ -790,12 +811,12 @@
                 </td>
                 <td>
                     <div class="action-group">
-                        <a href="${routeBase.detail}${item.id}" class="action-btn detail" title="Detail">
+                        <a href="${detailUrl}" class="action-btn detail" title="Detail">
                             <i class="bi bi-eye"></i>
                         </a>
 
                         ${canEdit ? `
-                            <a href="${routeBase.edit}${item.id}" class="action-btn edit" title="Edit Draft">
+                            <a href="${editUrl}" class="action-btn edit" title="Edit Draft">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         ` : ''}
@@ -831,7 +852,6 @@
         };
         paginationButtons.appendChild(prevBtn);
 
-        // Show limited page numbers
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPage, startPage + 4);
         
@@ -864,7 +884,8 @@
     }
 
     window.confirmDelete = function(id) {
-        deleteForm.action = `${routeBase.delete}${id}`;
+        // ✅ PERBAIKAN: Gunakan route destroy
+        deleteForm.action = `${routeBase.destroy}/${id}`;
         const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
         modal.show();
     }

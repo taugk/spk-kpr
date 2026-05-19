@@ -12,14 +12,7 @@
         <div class="pd-ltr-20">
             @include('manager.components.alert')
 
-            @hasSection('page_header')
-                @yield('page_header')
-            @else
-                @include('manager.components.page-header', [
-                    'title' => trim($__env->yieldContent('title')) ?: 'Dashboard',
-                    'breadcrumbs' => $breadcrumbs ?? []
-                ])
-            @endif
+
 
             @yield('content')
 

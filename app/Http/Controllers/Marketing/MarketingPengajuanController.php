@@ -18,50 +18,44 @@ class MarketingPengajuanController extends Controller
     // ─── Antrian masuk (status: submitted, belum diambil) ───────────────────
 
     public function masuk(Request $request)
-    {
-        // Query base: pengajuan submitted yang belum/sudah diambil marketing ini
-        $baseQuery = Pengajuan::submitted()
-            ->with(['user', 'debiturPribadi', 'unit.tipeUnit.proyek']);
+{
+    // Query base: HANYA pengajuan dengan status submitted
+    $baseQuery = Pengajuan::where('status', 'submitted') // <- filter eksplisit
+        ->with(['user', 'debiturPribadi', 'unit.tipeUnit.proyek']);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $baseQuery->where(function ($q) use ($search) {
-                $q->where('kode_pengajuan', 'like', "%{$search}%")
-                  ->orWhereHas('user', fn($s) =>
-                      $s->where('nama_lengkap', 'like', "%{$search}%")
-                  )
-                  ->orWhereHas('debiturPribadi', fn($s) =>
-                      $s->where('nik', 'like', "%{$search}%")
-                  );
-            });
-        }
-
-        if ($request->filled('start_date')) {
-            $baseQuery->whereDate('tgl_submitted', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $baseQuery->whereDate('tgl_submitted', '<=', $request->end_date);
-        }
-
-        // Statistik (sebelum paginate)
-        $totalAntrian = (clone $baseQuery)->count();
-        $totalPlafon  = (clone $baseQuery)->sum('jumlah_pinjaman');
-        $avgTenor     = round((clone $baseQuery)->avg('tenor_tahun') ?? 0, 1);
-        $hariIni      = (clone $baseQuery)->whereDate('tgl_submitted', today())->count();
-
-        $antrian = $baseQuery
-            ->orderBy('tgl_submitted', 'asc')
-            ->paginate(15)
-            ->withQueryString();
-
-        return view('marketing.pages.pengajuan.masuk', compact(
-            'antrian',
-            'totalAntrian',
-            'totalPlafon',
-            'avgTenor',
-            'hariIni'
-        ));
+    // Filter tambahan lainnya...
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $baseQuery->where(function ($q) use ($search) {
+            $q->where('kode_pengajuan', 'like', "%{$search}%")
+              ->orWhereHas('user', fn($s) =>
+                  $s->where('nama_lengkap', 'like', "%{$search}%")
+              )
+              ->orWhereHas('debiturPribadi', fn($s) =>
+                  $s->where('nik', 'like', "%{$search}%")
+              );
+        });
     }
+
+    // Statistik juga harus hanya untuk status submitted
+    $totalAntrian = (clone $baseQuery)->count();
+    $totalPlafon  = (clone $baseQuery)->sum('jumlah_pinjaman');
+    $avgTenor     = round((clone $baseQuery)->avg('tenor_tahun') ?? 0, 1);
+    $hariIni      = (clone $baseQuery)->whereDate('tgl_submitted', today())->count();
+
+    $antrian = $baseQuery
+        ->orderBy('tgl_submitted', 'asc')
+        ->paginate(15)
+        ->withQueryString();
+
+    return view('marketing.pages.pengajuan.masuk', compact(
+        'antrian',
+        'totalAntrian',
+        'totalPlafon',
+        'avgTenor',
+        'hariIni'
+    ));
+}
 
     // ─── Pengajuan yang sedang diverifikasi marketing ini ───────────────────
 
@@ -272,7 +266,7 @@ class MarketingPengajuanController extends Controller
         }
 
         return redirect()
-            ->route('marketing.pages.verifikasi.dokumen.create', $pengajuan)
+            ->route('marketing.verifikasi.dokumen.show', $pengajuan)
             ->with('success', "Pengajuan {$pengajuan->kode_pengajuan} berhasil diambil. Silakan lakukan verifikasi dokumen.");
     }
 }

@@ -3,7 +3,7 @@
         <div class="menu-icon dw dw-menu"></div>
 
         <div class="header-search">
-            <form action="{{ route('marketing.pengajuan.semua') }}" method="GET">
+            <form action="{{ route('marketing.riwayat.semua') }}" method="GET">
                 <div class="form-group mb-0 position-relative">
                     <i class="dw dw-search2 search-icon"></i>
                     <input type="text" name="q" class="form-control search-input" placeholder="Cari kode, debitur, unit...">

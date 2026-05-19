@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\{DashboardController, KriteriaController, KriteriaSkalaController, LaporanController, PengajuanController, PengaturanController, PenilaianController, PropertiController, UserController};
 use App\Http\Controllers\Debitur\{DebiturDashboardController, DebiturLoginController, DebiturPengajuanController};
-use App\Http\Controllers\Marketing\{MarketingDashboardController, MarketingLaporanController, MarketingNotifikasiController, MarketingPengajuanController, MarketingRiwayatController, MarketingVerifikasiController};
 use App\Http\Controllers\LandingPage\LandingPageController;
+use App\Http\Controllers\Manager\{ManajerAnalisisController, ManajerDashboardController, ManajerKinerjaController, ManajerLaporanController, ManajerPengajuanController, ManajerPenilaianController};
+use App\Http\Controllers\Marketing\{MarketingDashboardController, MarketingLaporanController, MarketingNotifikasiController, MarketingPengajuanController, MarketingRiwayatController, MarketingVerifikasiController};
 
 /*
 |--------------------------------------------------------------------------
@@ -257,123 +258,99 @@ Route::prefix('pengaturan')->name('pengaturan.')->controller(PengaturanControlle
 
 Route::middleware(['auth', 'role:debitur'])->prefix('debitur')->name('debitur.')->group(function () {
 
-        /*
-        |------------------------------------------------------------------
-        | Dashboard
-        |------------------------------------------------------------------
-        */
+    /*
+    |------------------------------------------------------------------
+    | Dashboard
+    |------------------------------------------------------------------
+    */
 
-        Route::get('/dashboard', function () {
-            return view('debitur.dashboard');
-        })->name('dashboard');
+    Route::get('/dashboard', function () {
+        return view('debitur.dashboard');
+    })->name('dashboard');
 
-        /*
-        |------------------------------------------------------------------
-        | Profile
-        |------------------------------------------------------------------
-        */
+    /*
+    |------------------------------------------------------------------
+    | Profile (Hapus duplikasi)
+    |------------------------------------------------------------------
+    */
 
-        Route::get('/profile', function () {
-            return view('debitur.profile');
-        })->name('profile');
+    Route::get('/profile', function () {
+        return view('debitur.pages.profile');
+    })->name('profil');
 
-        /*
-        |------------------------------------------------------------------
-        | Applications
-        |------------------------------------------------------------------
-        */
+    Route::get('/profile/edit', function () {
+        return view('debitur.pages.edit-profile');
+    })->name('profile.edit');
 
-        Route::get('/applications', function () {
-            return view('debitur.applications');
-        })->name('applications');
+    /*
+    |------------------------------------------------------------------
+    | Applications (Opsional, bisa dihapus jika pakai riwayat-pengajuan)
+    |------------------------------------------------------------------
+    */
 
-        Route::get('/applications/{id}', function ($id) {
-            return view('debitur.application-detail', compact('id'));
-        })->name('application.detail');
+    Route::get('/applications', function () {
+        return view('debitur.applications');
+    })->name('applications');
 
-        /*
-        |------------------------------------------------------------------
-        | Riwayat Pengajuan
-        |------------------------------------------------------------------
-        */
+    Route::get('/applications/{id}', function ($id) {
+        return view('debitur.application-detail', compact('id'));
+    })->name('application.detail');
 
+    /*
+    |------------------------------------------------------------------
+    | Pengajuan KPR
+    |------------------------------------------------------------------
+    */
 
+    // Form buat pengajuan baru
+    Route::get('/pengajuan-kpr', [DebiturPengajuanController::class, 'create'])->name('pengajuan-kpr');
 
-        /*
-        |------------------------------------------------------------------
-        | Pengajuan KPR
-        |------------------------------------------------------------------
-        */
+    // Store pengajuan baru
+    Route::post('/pengajuan-kpr/store', [DebiturPengajuanController::class, 'store'])->name('pengajuan.store');
 
-        Route::get('/pengajuan-kpr', [DebiturPengajuanController::class, 'create'])->name('pengajuan-kpr');
+    // Detail pengajuan
+    Route::get('/pengajuan/{pengajuan}', [DebiturPengajuanController::class, 'show'])->name('pengajuan.show');
 
-        Route::post('/pengajuan-kpr/store', [DebiturPengajuanController::class, 'store'])->name('pengajuan.store');
+    // Edit pengajuan (draft/revisi)
+    Route::get('/pengajuan/{pengajuan}/edit', [DebiturPengajuanController::class, 'edit'])->name('pengajuan.edit');
 
-        Route::get('/pengajuan/show/{pengajuan}', [DebiturPengajuanController::class, 'show'])->name('pengajuan.show');
+    // Update pengajuan
+    // Route::put('/pengajuan/{pengajuan}', [DebiturPengajuanController::class, 'update'])->name('pengajuan.update');
 
-        Route::post('/pengajuan-kpr/draft', function () {
-            //
-        })->name('pengajuan.draft');
+    // Atau pakai POST (sesuai form Anda)
+    Route::post('/pengajuan/{pengajuan}/update', [DebiturPengajuanController::class, 'update'])->name('pengajuan.update');
 
-        Route::get('/pengajuan-kpr/edit/{pengajuan}', [DebiturPengajuanController::class, 'edit'])->name('pengajuan.edit');
+    // Delete pengajuan (draft only)
+    Route::delete('/pengajuan/{pengajuan}', [DebiturPengajuanController::class, 'destroy'])->name('pengajuan.destroy');
 
-        Route::post('/pengajuan-kpr/update/{pengajuan}', [DebiturPengajuanController::class, 'update'])->name('pengajuan.update');
+    // Draft (opsional, bisa pakai store dengan parameter action=draft)
+    Route::post('/pengajuan-kpr/draft', [DebiturPengajuanController::class, 'store'])->name('pengajuan.draft');
 
-        Route::get('/riwayat-pengajuan', [DebiturPengajuanController::class,'history'])->name('riwayat-pengajuan');
+    /*
+    |------------------------------------------------------------------
+    | Dokumen Pengajuan (TAMBAHKAN INI)
+    |------------------------------------------------------------------
+    */
 
-        // Route::get('/pengajuan-kpr/{id}', [DebiturPengajuanController::class, 'show'])->name('pengajuan.detail');
+    // Download dokumen
+    Route::get('/dokumen/{dokumen}/download', [DebiturPengajuanController::class, 'downloadDokumen'])
+        ->name('dokumen.download')
+        ->where('dokumen', '[0-9]+');
 
-        /*
-        |------------------------------------------------------------------
-        | Simulasi KPR
-        |------------------------------------------------------------------
-        */
+    // Preview dokumen (opsional, untuk PDF/images)
+    Route::get('/dokumen/{dokumen}/preview', [DebiturPengajuanController::class, 'previewDokumen'])
+        ->name('dokumen.preview')
+        ->where('dokumen', '[0-9]+');
 
-        Route::get('/simulasi-kpr', function () {
-            return view('debitur.pages.simulasi-kpr');
-        })->name('simulasi-kpr');
+    /*
+    |------------------------------------------------------------------
+    | Riwayat Pengajuan
+    |------------------------------------------------------------------
+    */
 
-        /*
-        |------------------------------------------------------------------
-        | Properti
-        |------------------------------------------------------------------
-        */
+    Route::get('/riwayat-pengajuan', [DebiturPengajuanController::class, 'history'])->name('riwayat-pengajuan');
 
-        Route::get('/property', function () {
-            return view('debitur.pages.property');
-        })->name('properti');
-
-        Route::get('/property/{id}', function ($id) {
-            return view('debitur.pages.property-detail', compact('id'));
-        })->name('properti.detail');
-
-        /*
-        |------------------------------------------------------------------
-        | Dokumentasi
-        |------------------------------------------------------------------
-        */
-
-        Route::get('/dokumentasi', function () {
-            return view('debitur.pages.dokumentasi');
-        })->name('dokumentasi');
-
-        Route::get('/dokumentasi/{id}', function ($id) {
-            return view('debitur.pages.dokumentasi-detail', compact('id'));
-        })->name('dokumentasi.detail');
-
-        /*
-        |------------------------------------------------------------------
-        | Profile
-        |------------------------------------------------------------------
-        */
-        Route::get('/profile', function () {
-            return view('debitur.pages.profile');
-        })->name('profil');
-
-        Route::get('/profile/edit', function () {
-            return view('debitur.pages.edit-profile');
-        })->name('profile.edit');
-    });
+});
 
 
 
@@ -395,7 +372,7 @@ Route::middleware(['auth', 'role:marketing'])
         Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
             Route::get('/masuk', [MarketingPengajuanController::class, 'masuk'])->name('masuk');
             Route::get('/masuk/export', [MarketingPengajuanController::class, 'export'])->name('masuk.export');
-            
+
             Route::get('/antrian-admin', [MarketingPengajuanController::class, 'menungguAdmin'])->name('antrian.admin');
             Route::get('/revisi', [MarketingPengajuanController::class, 'revisi'])->name('data.revisi');
             Route::get('/ditolak', [MarketingPengajuanController::class, 'ditolak'])->name('ditolak');
@@ -409,13 +386,17 @@ Route::middleware(['auth', 'role:marketing'])
 
             // VERIFIKASI DOKUMEN
             Route::get('/dokumen', [MarketingVerifikasiController::class, 'index'])->name('dokumen');
+            Route::get('/dokumen/verifikasi/{pengajuan}', [MarketingPengajuanController::class, 'create'])->name('dokumen.create');
             Route::get('/dokumen/{pengajuan}', [MarketingVerifikasiController::class, 'show'])->name('dokumen.show');
             Route::post('/dokumen/{pengajuan}', [MarketingVerifikasiController::class, 'store'])->name('dokumen.store');
             Route::put('/dokumen/{pengajuan}', [MarketingVerifikasiController::class, 'update'])->name('dokumen.update');
             Route::get('/dokumen/export', [MarketingVerifikasiController::class, 'dokumenExport'])->name('dokumen.export');
 
             // API Routes untuk AJAX (PREVIEW & DOWNLOAD)
-            Route::get('/pengajuan/{pengajuan}/dokumen', [MarketingVerifikasiController::class, 'getDokumenByPengajuan'])->name('get-dokumen');
+            Route::post('/verifikasi/get-file', [MarketingVerifikasiController::class, 'getFile'])->name('get-file');
+            Route::get('/api/dokumen/{pengajuan}', [MarketingVerifikasiController::class, 'getDokumenByPengajuan'])
+                ->name('api.dokumen');
+
             Route::get('/dokumen/download/{dokumen}', [MarketingVerifikasiController::class, 'downloadDokumen'])->name('dokumen.download');
             Route::get('/dokumen/preview/{dokumen}', [MarketingVerifikasiController::class, 'previewDokumen'])->name('dokumen.preview');
 
@@ -460,12 +441,15 @@ Route::middleware(['auth', 'role:marketing'])
 
 
 
-    // ROUTE MANAJER
-// Tugas: Monitoring pengajuan, kinerja, laporan & analisis
-// ============================================================
+/*
+|--------------------------------------------------------------------------
+| Manager Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'role:manajer'])
-    ->prefix('manajer')
-    ->name('manajer.')
+    ->prefix('manager')
+    ->name('manager.')
     ->group(function () {
 
         // Dashboard Monitoring
@@ -490,6 +474,10 @@ Route::middleware(['auth', 'role:manajer'])
             // Detail pengajuan (read-only)
             Route::get('/{pengajuan}', [ManajerPengajuanController::class, 'show'])
                 ->name('show');
+
+            // Export data pengajuan
+            Route::post('/export', [ManajerPengajuanController::class, 'export'])
+                ->name('export');
         });
 
         // ── MONITORING KINERJA ──────────────────────────────
@@ -502,6 +490,14 @@ Route::middleware(['auth', 'role:manajer'])
             // Kinerja Admin
             Route::get('/admin', [ManajerKinerjaController::class, 'admin'])
                 ->name('admin');
+
+            // Detail kinerja admin
+            Route::get('/admin/{id}/detail', [ManajerKinerjaController::class, 'adminDetail'])
+                ->name('admin.detail');
+
+            // Detail kinerja marketing
+            Route::get('/marketing/{id}/detail', [ManajerKinerjaController::class, 'marketingDetail'])
+                ->name('marketing.detail');
         });
 
         // ── LAPORAN & STATISTIK ─────────────────────────────
@@ -519,8 +515,16 @@ Route::middleware(['auth', 'role:manajer'])
             Route::get('/export', [ManajerLaporanController::class, 'exportIndex'])
                 ->name('export');
 
-            Route::post('/export', [ManajerLaporanController::class, 'exportProses'])
+            Route::post('/export/proses', [ManajerLaporanController::class, 'exportProses'])
                 ->name('export.proses');
+
+            // Preview laporan
+            Route::post('/preview', [ManajerLaporanController::class, 'preview'])
+                ->name('preview');
+
+            // Download file export
+            Route::get('/download/{filename}', [ManajerLaporanController::class, 'download'])
+                ->name('download');
         });
 
         // ── ANALISIS DATA ───────────────────────────────────
@@ -533,9 +537,13 @@ Route::middleware(['auth', 'role:manajer'])
             // Tren Pengajuan
             Route::get('/tren', [ManajerAnalisisController::class, 'trenPengajuan'])
                 ->name('tren');
+
+            // Prediksi pengajuan (AJAX)
+            Route::get('/prediksi', [ManajerAnalisisController::class, 'prediksiPengajuan'])
+                ->name('prediksi');
         });
 
-        // ── REKAP PENILAIAN (opsional tambahan) ─────────────
+        // ── REKAP PENILAIAN ─────────────────────────────────
         Route::prefix('penilaian')->name('penilaian.')->group(function () {
 
             // Rekap semua penilaian SMART
@@ -545,7 +553,17 @@ Route::middleware(['auth', 'role:manajer'])
             // Detail hasil penilaian
             Route::get('/{penilaian}', [ManajerPenilaianController::class, 'show'])
                 ->name('show');
+
+            // Rekap per tahun
+            Route::get('/rekap', [ManajerPenilaianController::class, 'rekap'])
+                ->name('rekap');
+
+            // Export penilaian
+            Route::post('/export', [ManajerPenilaianController::class, 'export'])
+                ->name('export');
         });
+
+        // ── NOTIFIKASI (AJAX) ───────────────────────────────
+        Route::get('/notifications', [ManajerDashboardController::class, 'notifications'])
+            ->name('notifications');
     });
-
-

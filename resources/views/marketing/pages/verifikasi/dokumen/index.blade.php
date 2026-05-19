@@ -3,566 +3,795 @@
 @section('title', 'Verifikasi Dokumen KPR')
 
 @push('styles')
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary:      #4361ee;
-    --primary-light:#eef0ff;
-    --success:      #17c964;
-    --success-light:#e8fdf0;
-    --danger:       #f5222d;
-    --danger-light: #fff1f0;
-    --warning:      #f59e0b;
-    --warning-light:#fffbeb;
-    --info:         #06b6d4;
-    --info-light:   #ecfeff;
-    --bg:           #f0f2f8;
-    --card:         #ffffff;
-    --text:         #1e293b;
-    --muted:        #64748b;
-    --border:       #e2e8f0;
-    --radius:       14px;
-    --shadow:       0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
-    --shadow-hover: 0 8px 30px rgba(67,97,238,.14);
+    --ink: #0f172a;
+    --ink-2: #334155;
+    --ink-3: #64748b;
+    --ink-4: #94a3b8;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #f1f5f9;
+    --border: #e2e8f0;
+    --border-2: #cbd5e1;
+
+    --brand: #4361ee;
+    --brand-2: #3451d1;
+    --brand-3: #2a3fb8;
+    --brand-light: #e8edfe;
+    --brand-pale: #f0f3ff;
+
+    --gold: #b45309;
+    --gold-light: #fef3c7;
+    --ok: #15803d;
+    --ok-light: #dcfce7;
+    --warn: #b45309;
+    --warn-light: #fde68a;
+    --err: #b91c1c;
+    --err-light: #fee2e2;
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+    --shadow: 0 1px 3px rgba(0,0,0,.07);
+    --shadow-md: 0 4px 16px rgba(67,97,238,.15);
 }
 
+* { box-sizing: border-box; }
 body {
-    background: var(--bg) !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    color: var(--text) !important;
+    background: var(--surface-2) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    color: var(--ink) !important;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* ── Page header ────────────────────────────── */
-.vd-header {
+.vd-wrap { padding: 24px 20px 40px; max-width: 1400px; margin: 0 auto; }
+
+/* Header */
+.vd-page-header {
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 26px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 14px;
+    margin-bottom: 28px;
 }
-.vd-header-left h4 {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text);
-    margin: 0 0 4px;
-    letter-spacing: -.3px;
-}
-.vd-header-left p { font-size: .85rem; color: var(--muted); margin: 0; }
-
-/* ── Card base ──────────────────────────────── */
-.card {
-    border: 1px solid var(--border) !important;
-    border-radius: var(--radius) !important;
-    box-shadow: var(--shadow) !important;
-    background: var(--card) !important;
-    transition: box-shadow .25s, transform .25s;
-}
-.card:hover { box-shadow: var(--shadow-hover) !important; }
-.card-header {
-    border-bottom: 1px solid var(--border) !important;
-    background: transparent !important;
-    padding: 16px 20px !important;
-    border-radius: var(--radius) var(--radius) 0 0 !important;
+.vd-breadcrumb {
     display: flex;
     align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+}
+.vd-breadcrumb a { color: var(--brand); text-decoration: none; }
+.vd-breadcrumb a:hover { text-decoration: underline; color: var(--brand-3); }
+.vd-page-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 3px;
+}
+.vd-page-sub { font-size: 13px; color: var(--ink-3); margin: 0; }
+.btn-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: all .18s;
+}
+.btn-back-home:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+    text-decoration: none;
+}
+
+/* KPI Cards */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+@media (max-width: 900px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .kpi-strip { grid-template-columns: 1fr; } }
+
+.kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all .2s;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+}
+.kpi-card.k-total::before  { background: var(--brand); }
+.kpi-card.k-pending::before{ background: var(--warn); }
+.kpi-card.k-done::before   { background: var(--ok); }
+.kpi-card.k-avg::before    { background: var(--gold); }
+
+.kpi-top { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.kpi-icon {
+    width: 40px; height: 40px; border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+}
+.kpi-icon.i-brand  { background: var(--brand-pale); color: var(--brand); }
+.kpi-icon.i-warn   { background: #fffbeb; color: var(--warn); }
+.kpi-icon.i-ok     { background: #f0fdf4; color: var(--ok); }
+.kpi-icon.i-gold   { background: #fffbeb; color: var(--gold); }
+.kpi-num {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    font-family: 'DM Mono', monospace;
+}
+.kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+.kpi-foot  { font-size: 12px; color: var(--ink-4); margin: 0; }
+
+/* Filter Card */
+.filter-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+.filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 6px;
+}
+.filter-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--surface-2);
+    height: 38px;
+    transition: all .2s;
+}
+.filter-input:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-pale);
+}
+.btn-filter-apply {
+    height: 38px;
+    padding: 0 18px;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.btn-filter-apply:hover {
+    background: var(--brand-2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+.btn-filter-reset {
+    height: 38px;
+    padding: 0 14px;
+    background: var(--surface-3);
+    color: var(--ink-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all .2s;
+}
+.btn-filter-reset:hover {
+    background: var(--border);
+    color: var(--ink-2);
+    border-color: var(--brand-light);
+}
+
+/* Table Card */
+.table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.table-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
     justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: 10px;
 }
-.card-title {
-    font-size: .95rem !important;
-    font-weight: 700 !important;
-    color: var(--text) !important;
-    margin: 0 !important;
+.table-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
 }
-.card-body { padding: 20px !important; }
-
-/* ── Back button ────────────────────────────── */
-.btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: .8rem;
-    font-weight: 600;
-    color: var(--muted);
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 7px 14px;
-    text-decoration: none;
-    transition: all .2s;
+.count-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--brand-pale);
+    color: var(--brand);
 }
-.btn-back:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
 
-/* ── Stat cards ─────────────────────────────── */
-.stat-card {
-    border-radius: var(--radius) !important;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-.stat-card .sc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.stat-card .sc-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; flex-shrink: 0;
-}
-.stat-card .sc-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-.stat-card .sc-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1.1; letter-spacing: -1px; }
-
-.sc-primary  { border-top: 3px solid var(--primary) !important; }
-.sc-warning  { border-top: 3px solid var(--warning) !important; }
-.sc-success  { border-top: 3px solid var(--success) !important; }
-.icon-primary { background: var(--primary-light); color: var(--primary); }
-.icon-warning { background: var(--warning-light); color: var(--warning); }
-.icon-success { background: var(--success-light); color: var(--success); }
-
-/* ── Filter bar ─────────────────────────────── */
-.filter-bar { padding: 18px 20px !important; }
-.filter-bar .form-control {
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    font-size: .85rem;
-    color: var(--text);
-    padding: 8px 12px;
-    height: auto;
-    transition: border-color .2s;
-}
-.filter-bar .form-control:focus { border-color: var(--primary); outline: none; box-shadow: none; }
-.filter-bar label { font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
-.btn-filter {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: .82rem; font-weight: 600; border-radius: 9px;
-    padding: 8px 16px; border: none; cursor: pointer; transition: all .2s;
-}
-.btn-filter.primary { background: var(--primary); color: #fff; }
-.btn-filter.primary:hover { background: #3451d1; }
-.btn-filter.reset { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
-.btn-filter.reset:hover { background: #e2e8f0; }
-
-/* ── Main table ─────────────────────────────── */
-.vd-table { width: 100%; font-size: .84rem; }
+.vd-table { width: 100%; font-size: 13px; border-collapse: collapse; }
 .vd-table thead th {
-    font-size: .7rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .5px;
-    color: var(--muted); background: #f8fafc;
-    border-bottom: 1px solid var(--border) !important;
-    border-top: none !important;
-    padding: 12px 14px; white-space: nowrap;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 14px;
 }
 .vd-table tbody td {
-    padding: 14px 14px;
-    border-color: var(--border) !important;
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
     vertical-align: middle;
 }
-.vd-table tbody tr:hover td { background: #fafbfe; }
+.vd-table tbody tr:hover td { background: var(--brand-pale); }
 
-/* avatar */
+.kode-pengajuan { font-weight: 700; color: var(--brand); font-family: 'DM Mono', monospace; font-size: 12px; }
 .deb-avatar {
-    width: 36px; height: 36px; border-radius: 10px;
-    background: var(--primary-light); color: var(--primary);
-    font-weight: 700; font-size: .85rem;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width: 34px; height: 34px; border-radius: 8px;
+    background: var(--brand-light); color: var(--brand);
+    font-weight: 700; display: flex;
+    align-items: center; justify-content: center;
 }
+.deb-name { font-weight: 600; color: var(--ink); font-size: 13px; }
+.deb-meta { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
 
-/* doc checklist pills */
-.doc-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-.doc-pill {
+/* Progress Bar */
+.verif-prog-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+.verif-prog-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--surface-3);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.verif-prog-fill { height: 100%; border-radius: 3px; transition: width .3s ease; }
+.fill-ok { background: var(--ok); }
+.fill-warn { background: var(--warn); }
+.fill-err { background: var(--err); }
+
+/* Document Pills */
+.dok-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.dok-pill {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 6px; border-radius: 4px;
+}
+.dp-ok { background: #f0fdf4; color: var(--ok); }
+.dp-err { background: #fef2f2; color: var(--err); }
+.dp-pending { background: var(--surface-3); color: var(--ink-4); }
+
+/* Recommendation Badge */
+.rek-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    font-size: .68rem; font-weight: 600;
-    padding: 3px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    margin-top: 5px;
 }
-.dp-ok      { background: var(--success-light); color: var(--success); }
-.dp-bad     { background: var(--danger-light);  color: var(--danger);  }
-.dp-pending { background: #f1f5f9; color: var(--muted); }
+.rek-layak { background: #f0fdf4; color: var(--ok); }
+.rek-perlu { background: #fffbeb; color: var(--warn); }
+.rek-tidak { background: #fef2f2; color: var(--err); }
 
-/* progress */
-.doc-progress-wrap { margin-bottom: 6px; }
-.doc-progress-wrap .dp-label {
-    display: flex; justify-content: space-between;
-    font-size: .72rem; font-weight: 600; color: var(--muted); margin-bottom: 4px;
+/* Date */
+.date-main {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
 }
-.doc-progress-wrap .progress { height: 6px; border-radius: 4px; background: var(--border); }
-.doc-progress-wrap .progress-bar { border-radius: 4px; }
-
-/* status badge */
-.status-pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: .72rem; font-weight: 700; padding: 4px 12px;
-    border-radius: 20px; white-space: nowrap;
+.date-time { font-size: 10px; color: var(--ink-4); margin-top: 2px; }
+.date-diff {
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(21, 128, 61, 0.1);
+    color: var(--ok);
 }
-.sp-lengkap  { background: var(--success-light); color: var(--success); }
-.sp-sebagian { background: var(--warning-light); color: var(--warning); }
-.sp-invalid  { background: var(--danger-light);  color: var(--danger);  }
-.sp-pending  { background: #f1f5f9; color: var(--muted); }
+.date-diff.late {
+    background: rgba(180, 83, 9, 0.1);
+    color: var(--warn);
+}
+.date-diff.future {
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--brand);
+}
 
-/* action buttons */
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .btn-vd {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: .75rem; font-weight: 600;
-    padding: 6px 12px; border-radius: 8px;
-    border: none; cursor: pointer; transition: all .2s;
-    text-decoration: none; white-space: nowrap;
-}
-.btn-vd.verify { background: var(--info-light); color: var(--info); }
-.btn-vd.verify:hover { background: var(--info); color: #fff; }
-.btn-vd.detail { background: #f1f5f9; color: var(--muted); }
-.btn-vd.detail:hover { background: #e2e8f0; color: var(--text); }
-
-/* expand all btn */
-.btn-expand {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: .78rem; font-weight: 600; padding: 6px 14px;
-    border-radius: 8px; background: var(--primary-light);
-    color: var(--primary); border: none; cursor: pointer;
-}
-
-/* ── Pagination ─────────────────────────────── */
-.pagination .page-link {
-    border: 1px solid var(--border); color: var(--text);
-    font-size: .82rem; font-weight: 500;
-    border-radius: 8px !important; margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
     padding: 6px 12px;
-}
-.pagination .page-item.active .page-link { background: var(--primary); border-color: var(--primary); color: #fff; }
-.pagination .page-link:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border); }
-
-/* ── Panduan card ───────────────────────────── */
-.panduan-title { font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
-.panduan-table { width: 100%; font-size: .8rem; }
-.panduan-table td { padding: 5px 8px; vertical-align: top; color: var(--text); border: none; }
-.panduan-table td:first-child { font-weight: 600; white-space: nowrap; color: var(--text); }
-.panduan-table td:last-child { color: var(--muted); }
-.panduan-divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
-
-.info-tip {
-    background: var(--info-light);
-    border-left: 3px solid var(--info);
-    border-radius: 0 9px 9px 0;
-    padding: 12px 16px;
-    font-size: .82rem;
-    color: var(--text);
-}
-.info-tip strong { color: var(--info); }
-
-/* ── Empty state ────────────────────────────── */
-.empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
-.empty-state i { font-size: 2.5rem; opacity: .3; display: block; margin-bottom: 12px; }
-.empty-state h6 { font-weight: 700; color: var(--text); margin-bottom: 6px; }
-
-/* badge count */
-.count-badge {
-    font-size: .72rem; font-weight: 700; padding: 3px 10px;
-    border-radius: 20px; background: var(--primary-light);
-    color: var(--primary); margin-left: 6px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all .2s ease;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
 }
 
-@keyframes fadeUp {
-    from { opacity:0; transform:translateY(14px); }
-    to   { opacity:1; transform:translateY(0); }
+.btn-vd-verify {
+    background: var(--brand);
+    color: #fff;
+    border: 1px solid var(--brand);
 }
-.card { animation: fadeUp .4s ease both; }
-.row .col-md-4:nth-child(2) .card { animation-delay: .07s; }
-.row .col-md-4:nth-child(3) .card { animation-delay: .14s; }
+
+.btn-vd-verify:hover {
+    background: var(--brand-2);
+    border-color: var(--brand-2);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+}
+
+.btn-vd-verify:active {
+    transform: translateY(0);
+}
+
+.btn-vd-detail {
+    background: var(--surface);
+    color: var(--ink-2);
+    border: 1px solid var(--border);
+}
+
+.btn-vd-detail:hover {
+    background: var(--brand-pale);
+    border-color: var(--brand-light);
+    color: var(--brand);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* Pagination */
+.pagi-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+}
+.pagi-info { font-size: 12px; color: var(--ink-3); }
+
+.pagination { margin: 0; }
+.pagination .page-link {
+    color: var(--ink-2);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px;
+    margin: 0 2px;
+    border-radius: var(--radius-sm);
+    transition: all .2s;
+}
+.pagination .page-link:hover {
+    background: var(--brand-pale);
+    color: var(--brand);
+    border-color: var(--brand-light);
+}
+.pagination .page-item.active .page-link {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+/* Panduan Card */
+.panduan-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.panduan-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+}
+.panduan-header strong {
+    font-size: 13px;
+    color: var(--ink);
+}
+.panduan-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.panduan-list li {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+}
+.panduan-list li:last-child { border-bottom: none; }
+.panduan-list .p-num {
+    font-weight: 700;
+    color: var(--brand);
+    min-width: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+}
+.panduan-list .p-name { font-weight: 600; color: var(--ink); min-width: 140px; }
+.panduan-list .p-desc { color: var(--ink-3); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 52px 20px; }
+.empty-state-icon { font-size: 48px; opacity: .18; margin-bottom: 14px; }
+
+.btn-empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all .2s;
+}
+.btn-empty-cta:hover {
+    background: var(--brand-2);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+/* Utility */
+.gap-2 { gap: 8px; }
+.mb-3 { margin-bottom: 16px; }
+.my-3 { margin-top: 16px; margin-bottom: 16px; }
+.fw-bold { font-weight: 700; }
+.fw-semibold { font-weight: 600; }
+.text-muted { color: var(--ink-3); }
+.text-primary { color: var(--brand); }
+
+/* Animation */
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.kpi-card { animation: fadeSlide .35s ease both; }
+.filter-card { animation: fadeSlide .35s ease .05s both; }
+.table-card { animation: fadeSlide .4s ease .1s both; }
+.panduan-card { animation: fadeSlide .4s ease .15s both; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-3 py-2">
+<div class="vd-wrap">
 
-    {{-- ── Page Header ─────────────────────────────── --}}
-    <div class="vd-header">
-        <div class="vd-header-left">
-            <h4><i class="dw dw-file-31 mr-2" style="color:var(--primary)"></i>Verifikasi Dokumen KPR</h4>
-            <p>Verifikasi kelengkapan dan keabsahan dokumen pengajuan KPR debitur</p>
+    {{-- Header --}}
+    <div class="vd-page-header">
+        <div>
+            <div class="vd-breadcrumb">
+                <a href="{{ route('marketing.dashboard') }}">Dashboard</a>
+                <span>/</span>
+                <span>Verifikasi Dokumen KPR</span>
+            </div>
+            <h1 class="vd-page-title">
+                Verifikasi Dokumen KPR
+            </h1>
+            <p class="vd-page-sub">Periksa kelengkapan dan keabsahan dokumen debitur sebelum diteruskan ke admin</p>
         </div>
-        <a href="{{ route('marketing.dashboard') }}" class="btn-back">
-            <i class="dw dw-home"></i> Kembali ke Dashboard
+        <a href="{{ route('marketing.dashboard') }}" class="btn-back-home">
+            ← Kembali ke Dashboard
         </a>
     </div>
 
-    {{-- ── Filter ───────────────────────────────────── --}}
-    <div class="card mb-4">
-        <div class="filter-bar">
-            <form method="GET" action="{{ route('marketing.verifikasi.dokumen') }}">
-                <div class="row align-items-end" style="row-gap:12px">
-                    <div class="col-md-4">
-                        <label><i class="dw dw-search mr-1"></i> Cari</label>
-                        <input type="text" name="search" class="form-control"
-                               placeholder="Kode pengajuan / nama debitur"
-                               value="{{ request('search') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label><i class="dw dw-calendar mr-1"></i> Dari Tanggal</label>
-                        <input type="date" name="start_date" class="form-control"
-                               value="{{ request('start_date') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label><i class="dw dw-calendar mr-1"></i> Sampai Tanggal</label>
-                        <input type="date" name="end_date" class="form-control"
-                               value="{{ request('end_date') }}">
-                    </div>
-                    <div class="col-md-2">
-                        <div class="d-flex" style="gap:8px">
-                            <button type="submit" class="btn-filter primary flex-grow-1">
-                                <i class="dw dw-filter"></i> Filter
-                            </button>
-                            <a href="{{ route('marketing.verifikasi.dokumen') }}" class="btn-filter reset">
-                                <i class="dw dw-refresh"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- ── Stats Row ────────────────────────────────── --}}
-    <div class="row mb-4" style="row-gap:14px">
-
-        <div class="col-md-4">
-            <div class="card stat-card sc-primary">
-                <div class="sc-top">
-                    <div>
-                        <p class="sc-label mb-1">Total Verifikasi Dokumen</p>
-                        <div class="sc-value">{{ $pengajuan->total() ?? 0 }}</div>
-                    </div>
-                    <div class="sc-icon icon-primary">
-                        <i class="dw dw-folder"></i>
-                    </div>
-                </div>
-                <p style="font-size:.75rem;color:var(--muted);margin:0">
-                    <i class="dw dw-analytics mr-1"></i> Total data dalam antrian verifikasi
-                </p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card stat-card sc-warning">
-                <div class="sc-top">
-                    <div>
-                        <p class="sc-label mb-1">Belum Diverifikasi</p>
-                        <div class="sc-value">{{ $pendingCount ?? 0 }}</div>
-                    </div>
-                    <div class="sc-icon icon-warning">
-                        <i class="dw dw-hourglass"></i>
-                    </div>
-                </div>
-                <p style="font-size:.75rem;color:var(--muted);margin:0">
-                    <i class="dw dw-clock mr-1"></i> Menunggu tindakan petugas
-                </p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card stat-card sc-success">
-                <div class="sc-top">
-                    <div>
-                        <p class="sc-label mb-1">Rata-rata Kelengkapan</p>
-                        <div class="sc-value">{{ number_format($avgCompletion ?? 0, 1) }}%</div>
-                    </div>
-                    <div class="sc-icon icon-success">
-                        <i class="dw dw-analytics-21"></i>
-                    </div>
-                </div>
+    {{-- KPI Cards --}}
+    <div class="kpi-strip">
+        <div class="kpi-card k-total">
+            <div class="kpi-top">
                 <div>
-                    <div class="progress" style="height:6px;border-radius:4px;background:var(--border)">
-                        <div class="progress-bar bg-success" style="width:{{ $avgCompletion ?? 0 }}%;border-radius:4px"></div>
-                    </div>
-                    <p style="font-size:.73rem;color:var(--success);font-weight:600;margin:5px 0 0">
-                        @php
-                            $avg = $avgCompletion ?? 0;
-                            if ($avg >= 80) echo '<i class="dw dw-like mr-1"></i> Sangat Baik';
-                            elseif ($avg >= 60) echo '<i class="dw dw-checked mr-1"></i> Cukup Baik';
-                            elseif ($avg >= 40) echo '<i class="dw dw-hourglass mr-1"></i> Perlu Peningkatan';
-                            else echo '<i class="dw dw-sad mr-1"></i> Kurang';
-                        @endphp
-                    </p>
+                    <div class="kpi-label">Total Pengajuan Aktif</div>
+                    <div class="kpi-num">{{ $pengajuan->total() ?? 0 }}</div>
                 </div>
+                <div class="kpi-icon i-brand">📋</div>
             </div>
+            <p class="kpi-foot">Pengajuan sedang dalam proses verifikasi</p>
         </div>
 
+        <div class="kpi-card k-pending">
+            <div class="kpi-top">
+                <div>
+                    <div class="kpi-label">Belum Diperiksa</div>
+                    <div class="kpi-num">{{ $belumDiverifikasi ?? 0 }}</div>
+                </div>
+                <div class="kpi-icon i-warn">⏳</div>
+            </div>
+            <p class="kpi-foot">Menunggu tindakan verifikasi segera</p>
+        </div>
+
+        <div class="kpi-card k-done">
+            <div class="kpi-top">
+                <div>
+                    <div class="kpi-label">Sedang Diproses</div>
+                    <div class="kpi-num">{{ $sedangDiverifikasi ?? 0 }}</div>
+                </div>
+                <div class="kpi-icon i-ok">✓</div>
+            </div>
+            <p class="kpi-foot">Verifikasi dokumen sedang berjalan</p>
+        </div>
+
+        <div class="kpi-card k-avg">
+            <div class="kpi-top">
+                <div>
+                    <div class="kpi-label">Rata-rata Kelengkapan</div>
+                    <div class="kpi-num">{{ number_format($avgPersentase ?? 0, 0) }}<span style="font-size:1rem">%</span></div>
+                </div>
+                <div class="kpi-icon i-gold">📊</div>
+            </div>
+            <p class="kpi-foot">Rata-rata kelengkapan dokumen</p>
+        </div>
     </div>
 
-    {{-- ── Main Table Card ──────────────────────────── --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="card-title">
-                <i class="dw dw-table" style="color:var(--primary)"></i>
-                Daftar Pengajuan KPR — Verifikasi Dokumen
-                <span class="count-badge">{{ $pengajuan->total() }} Pengajuan</span>
+    {{-- Filter Form --}}
+    <div class="filter-card">
+        <form method="GET" action="{{ route('marketing.verifikasi.dokumen') }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="filter-label">🔍 Cari Pengajuan</label>
+                    <input type="text" name="search" class="filter-input"
+                           placeholder="Kode pengajuan atau nama debitur..."
+                           value="{{ request('search') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label">📅 Dari Tanggal</label>
+                    <input type="date" name="start_date" class="filter-input" value="{{ request('start_date') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label">📅 Sampai Tanggal</label>
+                    <input type="date" name="end_date" class="filter-input" value="{{ request('end_date') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="filter-label" style="opacity: 0;">Aksi</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn-filter-apply w-100">
+                            Filter
+                        </button>
+                        <a href="{{ route('marketing.verifikasi.dokumen') }}" class="btn-filter-reset">
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {{-- Main Table --}}
+    <div class="table-card">
+        <div class="table-card-header">
+            <h6 class="table-card-title">
+                <span>📋</span>
+                Daftar Antrian Verifikasi Dokumen
+                <span class="count-chip">{{ $pengajuan->total() }} Pengajuan</span>
             </h6>
-            <button type="button" class="btn-expand" id="expandAll">
-                <i class="dw dw-maximize"></i> Expand All
-            </button>
+            <small class="text-muted">Diurutkan berdasarkan tanggal masuk (terlama lebih dulu)</small>
         </div>
-        <div class="card-body p-0 !important">
-            <div class="table-responsive">
-                <table class="table vd-table mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width:3%;text-align:center">No</th>
-                            <th style="width:11%">Kode Pengajuan</th>
-                            <th style="width:16%">Data Debitur</th>
-                            <th style="width:16%">Properti &amp; KPR</th>
-                            <th style="width:24%">Progress Verifikasi</th>
-                            <th style="width:11%;text-align:center">Status</th>
-                            <th style="width:10%">Tanggal</th>
-                            <th style="width:9%;text-align:center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+
+        <div class="table-responsive">
+            <table class="vd-table">
+                <thead>
+                    <tr>
+                        <th style="width:5%">No</th>
+                        <th style="width:10%">Kode Pengajuan</th>
+                        <th style="width:15%">Data Debitur</th>
+                        <th style="width:15%">Unit & Pengajuan</th>
+                        <th style="width:22%">Status Verifikasi Dokumen</th>
+                        <th style="width:10%">Keputusan</th>
+                        <th style="width:10%">Tanggal Masuk</th>
+                        <th style="width:13%">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
                     @forelse($pengajuan as $index => $item)
                     @php
-                        $verifikasi  = $item->verifikasiMarketing;
-                        $validCount  = $verifikasi ? $verifikasi->getTotalValidDocuments() : 0;
-                        $totalDocs   = 7;
-                        $progress    = $totalDocs > 0 ? round(($validCount / $totalDocs) * 100) : 0;
-                        $progColor   = $progress >= 80 ? 'success' : ($progress >= 50 ? 'warning' : 'danger');
-
-                        $dokumenStatus = [
-                            'ktp'        => $verifikasi && $verifikasi->dok_ktp_valid,
-                            'kk'         => $verifikasi && $verifikasi->dok_kk_valid,
-                            'slip_gaji'  => $verifikasi && $verifikasi->dok_slip_gaji_valid,
-                            'rek_koran'  => $verifikasi && $verifikasi->dok_rek_koran_valid,
-                            'slik'       => $verifikasi && $verifikasi->dok_slik_valid,
-                            'surat_kerja'=> $verifikasi && $verifikasi->dok_surat_kerja_valid,
-                            'npwp'       => $verifikasi && $verifikasi->dok_npwp_valid,
+                        $verifikasi = $item->verifikasiMarketing;
+                        $dokFields = [
+                            'ktp' => 'dok_ktp_valid',
+                            'kk' => 'dok_kk_valid',
+                            'slip_gaji' => 'dok_slip_gaji_valid',
+                            'rekening_koran' => 'dok_rek_koran_valid',
+                            'slik' => 'dok_slik_valid',
+                            'sk_kerja' => 'dok_surat_kerja_valid',
+                            'npwp' => 'dok_npwp_valid',
                         ];
 
-                        $docList = [
-                            'ktp'        => 'KTP',
-                            'kk'         => 'KK',
-                            'slip_gaji'  => 'Slip Gaji',
-                            'rek_koran'  => 'Rek Koran',
-                            'slik'       => 'SLIK OJK',
-                            'surat_kerja'=> 'Srt Kerja',
-                            'npwp'       => 'NPWP',
-                        ];
+                        $validCount = 0;
+                        $totalDok = count($dokFields);
+                        foreach ($dokFields as $key => $col) {
+                            if ($verifikasi && $verifikasi->$col === true) $validCount++;
+                        }
+
+                        $progress = $totalDok > 0 ? round(($validCount / $totalDok) * 100) : 0;
+                        $fillClass = $progress >= 80 ? 'fill-ok' : ($progress >= 50 ? 'fill-warn' : 'fill-err');
+
+                        // Handle date difference correctly (no decimals, no negatives)
+                        $tglProses = $item->tgl_marketing_proses ?? $item->created_at;
+                        $now = \Carbon\Carbon::now();
+                        $diffInSeconds = $now->diffInSeconds($tglProses, false);
+                        $diffDays = (int) floor(abs($diffInSeconds) / 86400);
+                        $isFuture = $tglProses->isFuture();
+
+                        // Format the date difference text
+                        if ($isFuture) {
+                            $diffText = 'Mendatang';
+                            $diffClass = 'future';
+                        } else {
+                            if ($diffDays == 0) {
+                                $diffText = 'Hari ini';
+                            } elseif ($diffDays == 1) {
+                                $diffText = '1 hari lalu';
+                            } else {
+                                $diffText = $diffDays . ' hari lalu';
+                            }
+                            $diffClass = ($diffDays > 3) ? 'late' : '';
+                        }
                     @endphp
-                    <tr>
-                        {{-- No --}}
-                        <td style="text-align:center;color:var(--muted);font-weight:600">
-                            {{ $pengajuan->firstItem() + $index }}
+                    <tr @if(!$isFuture && $diffDays > 3) style="background: rgba(67,97,238,.03)" @endif>
+                        <td style="text-align: center">
+                            <span style="font-family: 'DM Mono', monospace; color: var(--ink-4);">
+                                {{ $pengajuan->firstItem() + $index }}
+                            </span>
                         </td>
 
-                        {{-- Kode --}}
                         <td>
-                            <strong style="color:var(--primary)">{{ $item->kode_pengajuan }}</strong>
-                            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">#{{ $item->id }}</div>
+                            <div class="kode-pengajuan">{{ $item->kode_pengajuan }}</div>
+                            <div class="deb-meta">ID: #{{ $item->id }}</div>
                         </td>
 
-                        {{-- Debitur --}}
                         <td>
-                            <div class="d-flex align-items-start" style="gap:10px">
-                                <div class="deb-avatar">{{ substr($item->user->nama_lengkap ?? 'N', 0, 1) }}</div>
+                            <div class="d-flex align-items-start" style="gap: 10px;">
+                                <div class="deb-avatar">
+                                    {{ strtoupper(substr($item->user->nama_lengkap ?? 'D', 0, 1)) }}
+                                </div>
                                 <div>
-                                    <div style="font-weight:600;font-size:.85rem">{{ $item->user->nama_lengkap ?? 'N/A' }}</div>
-                                    <div style="font-size:.73rem;color:var(--muted);margin-top:2px">
-                                        <i class="dw dw-phone"></i> {{ $item->debiturPribadi->no_hp ?? '-' }}
-                                    </div>
-                                    <div style="font-size:.73rem;color:var(--muted)">
-                                        <i class="dw dw-id-card"></i> {{ substr($item->debiturPribadi->nik ?? '-', 0, 16) }}
-                                    </div>
+                                    <div class="deb-name">{{ $item->user->nama_lengkap ?? 'Tidak tersedia' }}</div>
+                                    <div class="deb-meta">📞 {{ $item->debiturPribadi->no_hp ?? '-' }}</div>
+                                    <div class="deb-meta">🆔 NIK: {{ substr($item->debiturPribadi->nik ?? '-', 0, 8) }}...</div>
                                 </div>
                             </div>
                         </td>
 
-                        {{-- Properti --}}
                         <td>
-                            <div style="font-weight:600;font-size:.85rem">{{ $item->unit->tipeUnit->proyek->nama_proyek ?? 'N/A' }}</div>
-                            <div style="font-size:.73rem;color:var(--muted);margin-top:2px">
-                                <i class="dw dw-building"></i> {{ $item->unit->tipeUnit->nama_tipe ?? '-' }}
-                                &nbsp;·&nbsp;
-                                <i class="dw dw-tag"></i> {{ $item->unit->kode_unit ?? '-' }}
+                            <div class="fw-semibold" style="margin-bottom: 4px;">
+                                {{ $item->unit->tipeUnit->proyek->nama_proyek ?? '-' }}
                             </div>
-                            <div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)">
-                                <div style="font-size:.73rem;color:var(--muted)">
-                                    <i class="dw dw-money"></i>
-                                    <strong>{{ App\Helpers\MarketingHelper::formatRupiah($item->jumlah_pinjaman) }}</strong>
-                                </div>
-                                <div style="font-size:.73rem;color:var(--muted)">
-                                    <i class="dw dw-clock"></i> Tenor {{ $item->tenor_tahun }} Tahun
-                                </div>
+                            <div class="text-muted" style="font-size: 11px;">
+                                {{ $item->unit->tipeUnit->nama_tipe ?? '-' }} · {{ $item->unit->kode_unit ?? '-' }}
+                            </div>
+                            <div class="text-primary fw-bold" style="margin-top: 6px; font-size: 12px;">
+                                Rp {{ number_format($item->jumlah_pinjaman ?? 0, 0, ',', '.') }}
+                            </div>
+                            <div class="text-muted" style="font-size: 10px;">
+                                Tenor {{ $item->tenor_tahun ?? '-' }} tahun
                             </div>
                         </td>
 
-                        {{-- Progress --}}
                         <td>
-                            <div class="doc-progress-wrap">
-                                <div class="dp-label">
-                                    <span>Kelengkapan Dokumen</span>
-                                    <span style="color:var(--{{ $progColor }})">{{ $validCount }}/{{ $totalDocs }} · {{ $progress }}%</span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-{{ $progColor }}" style="width:{{ $progress }}%"></div>
-                                </div>
+                            <div class="verif-prog-label">
+                                <span>Kelengkapan Dokumen</span>
+                                <span style="font-family: 'DM Mono', monospace; font-weight: 600;">
+                                    {{ $validCount }}/{{ $totalDok }} ({{ $progress }}%)
+                                </span>
                             </div>
-                            <div class="doc-pills">
-                                @foreach($docList as $key => $label)
-                                    @if($dokumenStatus[$key])
-                                        <span class="doc-pill dp-ok"><i class="dw dw-checked-circle"></i>{{ $label }}</span>
-                                    @elseif($verifikasi && isset($verifikasi->{'dok_'.$key.'_valid'}) && $verifikasi->{'dok_'.$key.'_valid'} === false)
-                                        <span class="doc-pill dp-bad"><i class="dw dw-close-circle"></i>{{ $label }}</span>
+                            <div class="verif-prog-bar">
+                                <div class="verif-prog-fill {{ $fillClass }}" style="width: {{ $progress }}%"></div>
+                            </div>
+                            <div class="dok-pills">
+                                @foreach(['ktp' => 'KTP', 'kk' => 'KK', 'slip_gaji' => 'Gaji', 'rekening_koran' => 'Rek Koran', 'slik' => 'SLIK', 'sk_kerja' => 'SK Kerja', 'npwp' => 'NPWP'] as $key => $label)
+                                    @php $val = $verifikasi ? ($verifikasi->{$dokFields[$key]} ?? null) : null; @endphp
+                                    @if($val === true)
+                                        <span class="dok-pill dp-ok">✓ {{ $label }}</span>
+                                    @elseif($val === false)
+                                        <span class="dok-pill dp-err">✗ {{ $label }}</span>
                                     @else
-                                        <span class="doc-pill dp-pending"><i class="dw dw-hourglass"></i>{{ $label }}</span>
+                                        <span class="dok-pill dp-pending">{{ $label }}</span>
                                     @endif
                                 @endforeach
                             </div>
                         </td>
 
-                        {{-- Status --}}
-                        <td style="text-align:center">
-                            @if($verifikasi && $dokumenStatus['ktp'] && $dokumenStatus['kk'] && $dokumenStatus['slip_gaji'])
-                                <span class="status-pill sp-lengkap"><i class="dw dw-checked"></i> Lengkap</span>
-                            @elseif($verifikasi && ($dokumenStatus['ktp'] || $dokumenStatus['kk']))
-                                <span class="status-pill sp-sebagian"><i class="dw dw-hourglass"></i> Sebagian</span>
-                            @elseif($verifikasi && $verifikasi->dok_ktp_valid === false)
-                                <span class="status-pill sp-invalid"><i class="dw dw-close"></i> Tidak Valid</span>
-                            @else
-                                <span class="status-pill sp-pending"><i class="dw dw-hourglass"></i> Belum Diperiksa</span>
-                            @endif
-
-                            @if($verifikasi && $verifikasi->rekomendasi_marketing)
-                                <div class="mt-2">
-                                    {!! App\Helpers\MarketingHelper::getRekomendasiBadge($verifikasi->rekomendasi_marketing) !!}
-                                </div>
-                            @endif
+                        <td style="text-align: center;">
+                            @php
+                                $statusHtml = '<span class="status-pill sp-pending">⏳ Belum diproses</span>';
+                                if ($verifikasi && $verifikasi->rekomendasi_marketing) {
+                                    $rekClass = match($verifikasi->rekomendasi_marketing) {
+                                        'layak' => 'rek-layak',
+                                        'perlu_pertimbangan' => 'rek-perlu',
+                                        'tidak_layak' => 'rek-tidak',
+                                        default => 'rek-perlu'
+                                    };
+                                    $rekLabel = match($verifikasi->rekomendasi_marketing) {
+                                        'layak' => '✓ Layak',
+                                        'perlu_pertimbangan' => '⚠️ Perlu Review',
+                                        'tidak_layak' => '✗ Tolak',
+                                        default => '-'
+                                    };
+                                    $statusHtml = '<div class="' . $rekClass . '" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">' . $rekLabel . '</div>';
+                                }
+                            @endphp
+                            {!! $statusHtml !!}
                         </td>
 
-                        {{-- Tanggal --}}
                         <td>
-                            <div style="font-weight:600;font-size:.82rem">
-                                {{ \Carbon\Carbon::parse($item->tgl_marketing_proses ?? $item->created_at)->format('d/m/Y') }}
+                            <div class="date-main">{{ \Carbon\Carbon::parse($tglProses)->format('d/m/Y') }}</div>
+                            <div class="date-time">{{ \Carbon\Carbon::parse($tglProses)->format('H:i') }}</div>
+                            <div class="date-diff {{ $diffClass }}">
+                                <span>⏱️</span> {{ $diffText }}
                             </div>
-                            <div style="font-size:.75rem;color:var(--muted)">
-                                {{ \Carbon\Carbon::parse($item->tgl_marketing_proses ?? $item->created_at)->format('H:i') }}
-                            </div>
-                            @if($item->tgl_marketing_proses)
-                                <div style="font-size:.72rem;color:var(--success);margin-top:3px">
-                                    <i class="dw dw-time"></i> {{ $item->tgl_marketing_proses->diffForHumans() }}
-                                </div>
-                            @else
-                                <div style="font-size:.72rem;color:var(--muted);margin-top:3px">
-                                    <i class="dw dw-hourglass"></i> Belum dimulai
-                                </div>
-                            @endif
                         </td>
 
-                        {{-- Aksi --}}
-                        <td style="text-align:center">
-                            <div class="d-flex flex-column" style="gap:6px;align-items:center">
-                                <a href="{{ route('marketing.verifikasi.dokumen.show', $item->id) }}" class="btn-vd verify">
-                                    <i class="dw dw-edit-2"></i> Verifikasi
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ route('marketing.verifikasi.dokumen.show', $item->id) }}" class="btn-vd btn-vd-verify">
+                                    ✓ Verifikasi
                                 </a>
-                                <a href="{{ route('marketing.pengajuan.show', $item->id) }}" class="btn-vd detail">
-                                    <i class="dw dw-eye"></i> Detail
+                                <a href="{{ route('marketing.pengajuan.show', $item->id) }}" class="btn-vd btn-vd-detail">
+                                    👁️ Detail
                                 </a>
                             </div>
                         </td>
@@ -571,127 +800,101 @@ body {
                     <tr>
                         <td colspan="8">
                             <div class="empty-state">
-                                <i class="dw dw-folder"></i>
-                                <h6>Tidak ada pengajuan yang perlu verifikasi dokumen</h6>
-                                <p style="font-size:.82rem">Semua pengajuan sudah diverifikasi atau belum ada pengajuan baru</p>
-                                <a href="{{ route('marketing.pengajuan.masuk') }}" class="btn-filter primary mt-2">
-                                    <i class="dw dw-inbox"></i> Lihat Antrian Pengajuan
+                                <div class="empty-state-icon">📭</div>
+                                <h6 style="margin-bottom: 8px;">Tidak ada pengajuan untuk diverifikasi</h6>
+                                <p style="margin-bottom: 20px;">Semua pengajuan telah selesai diverifikasi atau belum ada pengajuan baru yang masuk.</p>
+                                <a href="{{ route('marketing.pengajuan.masuk') }}" class="btn-empty-cta">
+                                    Lihat Antrian Pengajuan Masuk
                                 </a>
                             </div>
                         </td>
                     </tr>
                     @endforelse
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
+        </div>
 
-            {{-- Pagination --}}
-            @if($pengajuan->hasPages())
-            <div class="d-flex align-items-center justify-content-between px-4 py-3"
-                 style="border-top:1px solid var(--border)">
-                <small style="color:var(--muted)">
-                    Menampilkan <strong>{{ $pengajuan->firstItem() ?? 0 }}</strong>
-                    – <strong>{{ $pengajuan->lastItem() ?? 0 }}</strong>
-                    dari <strong>{{ $pengajuan->total() }}</strong> data
-                </small>
+        @if($pengajuan->hasPages())
+        <div class="pagi-wrap">
+            <div class="pagi-info">
+                Menampilkan <strong>{{ $pengajuan->firstItem() }}</strong> - <strong>{{ $pengajuan->lastItem() }}</strong>
+                dari <strong>{{ $pengajuan->total() }}</strong> pengajuan
+            </div>
+            <div>
                 {{ $pengajuan->withQueryString()->links('pagination::bootstrap-4') }}
             </div>
-            @endif
         </div>
+        @endif
     </div>
 
-    {{-- ── Panduan Verifikasi ───────────────────────── --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="card-title">
-                <i class="dw dw-info-circle" style="color:var(--primary)"></i>
-                Panduan Verifikasi Dokumen KPR
-            </h6>
+    {{-- Panduan Verifikasi --}}
+    <div class="panduan-card">
+        <div class="panduan-header">
+            <strong>📋 Panduan Verifikasi Dokumen KPR</strong>
         </div>
-        <div class="card-body">
-            <div class="row" style="row-gap:20px">
-
-                {{-- Jenis Dokumen --}}
-                <div class="col-md-6">
-                    <p class="panduan-title">
-    <span class="sc-icon icon-primary d-inline-flex align-items-center justify-content-center"
-          style="width:28px;height:28px;border-radius:8px;font-size:.85rem">
-        <i class="dw dw-file"></i>
-    </span>
-    Dokumen Wajib Diverifikasi
-</p>
-                    <table class="panduan-table">
-                        <tr><td>1. KTP Debitur</td><td>Sesuai identitas, jelas, tidak expired</td></tr>
-                        <tr><td>2. Kartu Keluarga (KK)</td><td>Sesuai KTP, data lengkap</td></tr>
-                        <tr><td>3. Slip Gaji</td><td>3 bulan terakhir, sesuai penghasilan</td></tr>
-                        <tr><td>4. Rekening Koran</td><td>3 bulan, mutasi sesuai penghasilan</td></tr>
-                        <tr><td>5. Laporan SLIK OJK</td><td>Riwayat kredit lancar</td></tr>
-                        <tr><td>6. Surat Keterangan Kerja</td><td>Legal dari perusahaan</td></tr>
-                        <tr><td>7. NPWP</td><td>Wajib jika penghasilan &gt; Rp 4,5 jt/bulan</td></tr>
-                    </table>
+        <div class="panduan-body" style="padding: 20px;">
+            <div class="row">
+                <div class="col-md-5">
+                    <h6 style="margin-bottom: 12px; font-weight: 700; color: var(--brand);">📄 Dokumen yang Wajib Diperiksa</h6>
+                    <ul class="panduan-list">
+                        <li><span class="p-num">01</span><span class="p-name">KTP Debitur</span><span class="p-desc">Sesuai identitas, terbaca jelas, tidak expired</span></li>
+                        <li><span class="p-num">02</span><span class="p-name">Kartu Keluarga</span><span class="p-desc">Data sesuai dengan KTP, lengkap</span></li>
+                        <li><span class="p-num">03</span><span class="p-name">Slip Gaji</span><span class="p-desc">3 bulan terakhir, sesuai penghasilan yang dilaporkan</span></li>
+                        <li><span class="p-num">04</span><span class="p-name">Rekening Koran</span><span class="p-desc">3 bulan terakhir, mutasi sesuai penghasilan</span></li>
+                        <li><span class="p-num">05</span><span class="p-name">Laporan SLIK OJK</span><span class="p-desc">Riwayat kredit lancar (kolektibilitas 1)</span></li>
+                        <li><span class="p-num">06</span><span class="p-name">SK / Surat Kerja</span><span class="p-desc">Dikeluarkan resmi oleh perusahaan, ada tanda tangan</span></li>
+                        <li><span class="p-num">07</span><span class="p-name">NPWP</span><span class="p-desc">Wajib jika penghasilan > Rp 4.500.000/bulan</span></li>
+                    </ul>
                 </div>
+                <div class="col-md-4">
+                    <h6 style="margin-bottom: 12px; font-weight: 700; color: var(--brand);">✓ Status Verifikasi Dokumen</h6>
+                    <ul class="panduan-list">
+                        <li>
+                            <span class="dok-pill dp-ok" style="min-width: 70px;">✓ Valid</span>
+                            <span class="p-desc">Dokumen asli, jelas, masih berlaku, sesuai data debitur</span>
+                        </li>
+                        <li>
+                            <span class="dok-pill dp-err" style="min-width: 70px;">✗ Tidak Valid</span>
+                            <span class="p-desc">Tidak sesuai, buram, expired, atau terindikasi palsu</span>
+                        </li>
+                        <li>
+                            <span class="dok-pill dp-pending" style="min-width: 70px;">⏳ Belum</span>
+                            <span class="p-desc">Dokumen terupload tapi belum diverifikasi marketing</span>
+                        </li>
+                    </ul>
 
-                {{-- Status & Rekomendasi --}}
-                <div class="col-md-6">
-    <p class="panduan-title">
-        <span class="sc-icon icon-success d-inline-flex align-items-center justify-content-center"
-              style="width:28px;height:28px;border-radius:8px;font-size:.85rem">
-            <i class="dw dw-file-135"></i>
-        </span>
-        Status Verifikasi
-    </p>
+                    <hr style="margin: 16px 0; border-color: var(--border);">
 
-    <table class="panduan-table">
-        <tr>
-            <td><span class="status-pill sp-lengkap" style="font-size:.68rem;padding:2px 10px">Valid</span></td>
-            <td>Dokumen sesuai, jelas, dan masih berlaku</td>
-        </tr>
-        <tr>
-            <td><span class="status-pill sp-invalid" style="font-size:.68rem;padding:2px 10px">Tidak Valid</span></td>
-            <td>Tidak sesuai / blur / expired / palsu</td>
-        </tr>
-        <tr>
-            <td><span class="status-pill sp-sebagian" style="font-size:.68rem;padding:2px 10px">Perlu Revisi</span></td>
-            <td>Kurang lengkap / perlu perbaikan</td>
-        </tr>
-        <tr>
-            <td><span class="status-pill sp-pending" style="font-size:.68rem;padding:2px 10px">Belum Diperiksa</span></td>
-            <td>Dokumen belum diverifikasi</td>
-        </tr>
-    </table>
-
-    <hr class="panduan-divider">
-
-    <p class="panduan-title">
-        <span class="sc-icon icon-primary d-inline-flex align-items-center justify-content-center"
-              style="width:28px;height:28px;border-radius:8px;font-size:.85rem">
-            <i class="dw dw-file-210"></i>
-        </span>
-        Rekomendasi Kelayakan
-    </p>
-
-    <table class="panduan-table">
-        <tr>
-            <td><span class="status-pill sp-lengkap" style="font-size:.68rem;padding:2px 10px">Layak</span></td>
-            <td>Minimal 85% dokumen valid</td>
-        </tr>
-        <tr>
-            <td><span class="status-pill sp-sebagian" style="font-size:.68rem;padding:2px 10px">Perlu Pertimbangan</span></td>
-            <td>60–85% dokumen valid</td>
-        </tr>
-        <tr>
-            <td><span class="status-pill sp-invalid" style="font-size:.68rem;padding:2px 10px">Tidak Layak</span></td>
-            <td>Kurang dari 60% dokumen valid</td>
-        </tr>
-    </table>
-</div>
-            </div>
-
-            <hr class="panduan-divider">
-            <div class="info-tip">
-                <i class="dw dw-bulb mr-2" style="color:var(--info)"></i>
-                <strong>Tips:</strong> Prioritaskan verifikasi untuk pengajuan dengan tanggal <strong>tertua</strong> terlebih dahulu.
-                Setelah verifikasi dokumen selesai, lanjutkan ke <strong>Verifikasi Lapangan</strong>.
+                    <h6 style="margin-bottom: 12px; font-weight: 700; color: var(--brand);">📊 Ambang Rekomendasi</h6>
+                    <ul class="panduan-list">
+                        <li>
+                            <span class="rek-badge rek-layak" style="min-width: 70px;">✓ Layak</span>
+                            <span class="p-desc">≥ 85% dokumen valid → teruskan ke admin</span>
+                        </li>
+                        <li>
+                            <span class="rek-badge rek-perlu" style="min-width: 70px;">⚠️ Perlu</span>
+                            <span class="p-desc">60–84% dokumen valid → pertimbangkan</span>
+                        </li>
+                        <li>
+                            <span class="rek-badge rek-tidak" style="min-width: 70px;">✗ Tolak</span>
+                            <span class="p-desc">&lt; 60% dokumen valid → minta revisi/tolak</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 style="margin-bottom: 12px; font-weight: 700; color: var(--brand);">➡️ Alur Verifikasi</h6>
+                    <ul class="panduan-list">
+                        <li><span class="p-num">1</span><span class="p-desc">Klik tombol <strong>Verifikasi</strong> pada baris pengajuan</span></li>
+                        <li><span class="p-num">2</span><span class="p-desc">Preview / download setiap dokumen debitur</span></li>
+                        <li><span class="p-num">3</span><span class="p-desc">Tandai tiap dokumen: Valid / Tidak Valid</span></li>
+                        <li><span class="p-num">4</span><span class="p-desc">Tentukan rekomendasi (Layak/Perlu/Tolak)</span></li>
+                        <li><span class="p-num">5</span><span class="p-desc">Tentukan keputusan akhir dan simpan</span></li>
+                        <li><span class="p-num">6</span><span class="p-desc">Sistem akan mengirim notifikasi otomatis</span></li>
+                    </ul>
+                    <div style="margin-top: 16px; padding: 10px; background: var(--brand-pale); border-radius: var(--radius); font-size: 11px; color: var(--ink-2);">
+                        <strong>💡 Tips:</strong> Prioritaskan pengajuan dengan status "Belum Diperiksa" dan tanggal masuk paling lama untuk menghindari keterlambatan proses KPR.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -701,13 +904,9 @@ body {
 
 @push('scripts')
 <script>
-$(document).ready(function () {
-    $('#expandAll').on('click', function () {
-        $('[data-toggle="tooltip"]').tooltip('show');
-        setTimeout(function () {
-            $('[data-toggle="tooltip"]').tooltip('hide');
-        }, 2000);
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    // Optional: Add any additional JavaScript functionality here
+    console.log('Verifikasi dokumen page loaded');
 });
 </script>
 @endpush
