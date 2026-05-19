@@ -1,58 +1,227 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SPK KPR Perumahan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem Pendukung Keputusan (SPK) untuk proses pengajuan Kredit Pemilikan Rumah (KPR) berbasis metode **SMART (Simple Multi-Attribute Rating Technique)**. Dibangun dengan Laravel 13 dan template Deskapp – Free Bootstrap 4 HTML5 responsive admin dashboard template, sistem ini mengelola alur pengajuan KPR mulai dari pendaftaran debitur hingga keputusan akhir secara terstruktur dan transparan.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Landing Page** — Informasi proyek properti, simulasi KPR, dan pencarian unit
+- **Multi-Role Authentication** — Admin, Marketing, Manajer, dan Debitur
+- **Alur Pengajuan KPR** — Dari submission debitur hingga keputusan akhir
+- **Penilaian SMART** — Algoritma perhitungan skor multi-kriteria dengan bobot dan normalisasi
+- **Verifikasi Marketing** — Pengecekan kelengkapan dan keputusan awal marketing
+- **Dashboard Manajer** — Analisis kinerja, laporan, dan monitoring pengajuan
+- **Manajemen Properti** — Data proyek, tipe unit, dan unit
+- **Laporan & Ekspor** — Ekspor data pengajuan dan laporan statistik
+- **Notifikasi** — Sistem notifikasi real-time per role
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Teknologi
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Komponen      | Teknologi                                    |
+| ------------- | -------------------------------------------- |
+| Backend       | PHP 8.3, Laravel 13                          |
+| Frontend      | Blade, Tailwind CSS 4, Vite 8                |
+| Database      | MySQL (SQLite untuk development)             |
+| Arsitektur DB | Views & Stored Procedure (`sp_hitung_smart`) |
+| Queue         | Database Queue                               |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Role Pengguna
 
-## Agentic Development
+| Role          | Akses                                                           |
+| ------------- | --------------------------------------------------------------- |
+| **Debitur**   | Registrasi, pengajuan KPR, upload dokumen, pantau status        |
+| **Marketing** | Verifikasi pengajuan, rekomendasi, laporan, riwayat             |
+| **Admin**     | Penilaian SMART, manajemen properti, kriteria, debitur, laporan |
+| **Manajer**   | Dashboard analisis, monitoring kinerja, laporan menyeluruh      |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
-```bash
-composer require laravel/boost --dev
+## Alur Pengajuan
 
-php artisan boost:install
+```
+Debitur Mengajukan
+        ↓
+Verifikasi Marketing
+        ↓
+Penilaian SMART (Admin)
+        ↓
+Skor ≥ Threshold → Disetujui Sistem
+Skor < Threshold → Ditolak Sistem
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Status pengajuan: `submitted` → `verifikasi_marketing` → `revisi_debitur` → `penilaian_admin` → `disetujui_sistem` / `ditolak_sistem` / `ditolak_marketing`
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Instalasi
 
-## Code of Conduct
+### Prasyarat
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- PHP >= 8.3
+- Composer
+- Node.js & npm
+- MySQL (atau SQLite untuk development)
 
-## Security Vulnerabilities
+### Langkah Instalasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**1. Clone repository**
 
-## License
+```bash
+git clone <url-repo> spk-kpr-smart-persada
+cd spk-kpr-smart-persada
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**2. Setup otomatis (rekomendasi)**
+
+```bash
+composer run setup
+```
+
+Script ini akan menjalankan secara berurutan:
+
+- `composer install`
+- Menyalin `.env.example` ke `.env`
+- Generate application key
+- Menjalankan migrasi database
+- `npm install`
+- `npm run build`
+
+**3. Setup manual (alternatif)**
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+
+# Konfigurasi database di .env terlebih dahulu, lalu:
+php artisan migrate
+
+npm install
+npm run build
+```
+
+**4. Konfigurasi environment**
+
+Edit file `.env` sesuai kebutuhan:
+
+```env
+APP_NAME="SPK KPR Smart Persada"
+APP_URL=http://localhost
+
+# Untuk production gunakan MySQL:
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=spk_kpr
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Storage untuk dokumen upload
+FILESYSTEM_DISK=local
+```
+
+> **Catatan:** Migrasi akan otomatis membuat views (`v_pengajuan_lengkap`, `v_penilaian_detail`, `v_antrian_marketing`, `v_statistik_bulanan`) dan stored procedure `sp_hitung_smart` di MySQL.
+
+---
+
+## Menjalankan Aplikasi
+
+### Development
+
+```bash
+composer run dev
+```
+
+Perintah ini menjalankan secara bersamaan:
+
+- `php artisan serve` — Web server
+- `php artisan queue:listen` — Queue worker
+- `php artisan pail` — Log viewer
+- `npm run dev` — Vite HMR
+
+### Production
+
+```bash
+npm run build
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan serve
+```
+
+Jalankan queue worker secara terpisah:
+
+```bash
+php artisan queue:work --daemon
+```
+
+---
+
+## Struktur Direktori
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Admin/          # Dashboard, Pengajuan, Penilaian, Properti, Kriteria, Laporan
+│   │   ├── Auth/           # Login admin/staff
+│   │   ├── Debitur/        # Login, Dashboard, Pengajuan debitur
+│   │   ├── LandingPage/    # Landing page & simulasi KPR
+│   │   ├── Manager/        # Dashboard, Analisis, Kinerja, Laporan manajer
+│   │   └── Marketing/      # Dashboard, Verifikasi, Riwayat, Laporan marketing
+│   ├── Middleware/
+│   │   └── RoleMiddleware.php
+│   └── Requests/
+│       └── DebiturPengajuanRequest.php
+├── Helpers/                # AdminHelper, DebiturPengajuanHelper, KriteriaHelper, MarketingHelper
+├── Models/                 # Eloquent models
+├── Providers/
+└── Services/
+    ├── Admin/              # SmartService, KriteriaService, ReportService, dll
+    ├── Debitur/
+    └── Marketing/
+
+database/
+├── migrations/             # 15+ migrasi termasuk views & stored procedure
+└── seeders/
+
+routes/
+└── web.php                 # Semua route terproteksi middleware role
+```
+
+---
+
+## Metode SMART
+
+Sistem menggunakan algoritma **Simple Multi-Attribute Rating Technique** dengan tahapan:
+
+1. **Definisi Kriteria** — Setiap kriteria memiliki kode, nama, tipe (benefit/cost), bobot, dan skala penilaian
+2. **Input Nilai** — Admin menginput nilai untuk setiap kriteria berdasarkan data debitur
+3. **Normalisasi** — Nilai dinormalisasi terhadap nilai minimum/maksimum pada skala kriteria
+4. **Pembobotan** — Skor kontribusi = nilai normalisasi × bobot kriteria
+5. **Agregasi** — Skor akhir = jumlah seluruh skor kontribusi
+6. **Keputusan** — Skor akhir dibandingkan threshold (default: 65). Skor ≥ threshold → Disetujui
+
+Perhitungan disimpan detail per kriteria di tabel `penilaian_detail` untuk keperluan audit dan transparansi.
+
+---
+
+## Database Views
+
+| View                  | Deskripsi                                                   |
+| --------------------- | ----------------------------------------------------------- |
+| `v_pengajuan_lengkap` | Gabungan data pengajuan, debitur, properti, dan hasil SMART |
+| `v_penilaian_detail`  | Detail skor SMART per kriteria per pengajuan                |
+| `v_antrian_marketing` | Pengajuan aktif dalam antrean marketing                     |
+| `v_statistik_bulanan` | Statistik pengajuan dan approval rate per bulan             |
+
+---
+
+## Lisensi
+
+Proyek ini dikembangkan untuk keperluan internal. Dibangun di atas [Laravel Framework](https://laravel.com) yang dilisensikan di bawah [MIT License](https://opensource.org/licenses/MIT).
